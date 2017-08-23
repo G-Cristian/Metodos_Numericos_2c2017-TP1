@@ -1,4 +1,4 @@
-#include iostream
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include "ppmloader.h"
@@ -20,15 +20,42 @@ void read_image(std::string filename, uchar** data, int* width, int* height){
 }
 //lee una imagen
 
+
+
+
+
+
+
+
+
+
+
 void write_image(const char *filename, const void *src, int width, int height, PPM_LOADER_PIXEL_TYPE pt, const char* comments){
 	bool ret = SavePPMFile(filename, src, width, height, pt, comments);
 	if (!ret || width == 0|| height == 0|| pt!=PPM_LOADER_PIXEL_TYPE_RGB_8B){
     	throw std::exception();//("Fallo al leer la imagen.");
   	}
 }
+/*void test_save(){
 
+  char comments[100];
+  sprintf(comments, "%s", "Hello world");
 
-void test_image(){
+  int width = 3, height =1;
+  uchar* data = new uchar[width*height*3];
+  data[0] = data[1] = data[2] = 100; // RGB
+  data[3] = data[4] = data[5] = 150; // RGB
+  data[6] = data[7] = data[8] = 245; // RGB
+  std::string filename = "buda_0.ppm";
+
+  bool ret = SavePPMFile(filename.c_str(),data,width,height,PPM_LOADER_PIXEL_TYPE_RGB_8B, comments);
+  if (!ret)
+  {
+    std::cout << "ERROR: couldn't save Image to ppm file" << std::endl;
+  }
+}
+*/
+/*void test_image(){
   uchar* data = NULL;
   int width = 0, height = 0;
   std::string filename = "ppmImagenes/buda/buda.0.ppm";
@@ -41,32 +68,37 @@ void test_image(){
     cout << endl;
   }
   delete [] data;
-}
+}*/
 
 int main(){
+
+
 
 uchar* data = NULL;
 int width = 0, height = 0;
 std:: string filename;
+std:: string filename_out;
 cin >> filename;
-
-read_image(filename, &data, &width; &height);//en data me queda la imagen
-
-for(int h=0; h < height; ++h){
-	for(int w = 0; w < width; ++w){
-		cout << 
-	}
-}
+cin >> filename_out;
 
 
+read_image(filename, &data, &width, &height);//en data me queda la imagen
+char comments[100];
+sprintf(comments, "%s", "Hello world");
+write_image(filename_out.c_str(), data, width, height, PPM_LOADER_PIXEL_TYPE_RGB_8B, comments);
 
+
+
+/*buscar_punto_mas_brillante();
 for(int h =0; h < height; ++h){
 	for (int w =0; w < width; ++w){
-
+    ahora_es_punto_mas_brillante();
 	}	
 }
+write_image();*/
 	
-//recibo la  matriz mate.
+//recibo la  imagen mate.
+
 //Hallo el punto mas brillante 
 //esa es la direccion de la intensidad de la luz
 //imprimo la direccion de la luz	
