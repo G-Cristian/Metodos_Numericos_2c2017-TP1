@@ -74,13 +74,23 @@ public:
 	}
 	
 	const vector<T> &operator[](int indice) const{
+		assert(indiceEnRangoAlto(indice));
 		return _matriz[indice];
 	}
 
 	vector<T> &operator[](int indice){
+		assert(indiceEnRangoAlto(indice));
 		return _matriz[indice];
 	}
 	
+	inline bool indiceEnRangoAlto(int indice) const {
+		return 0 <= indice && indice < _alto;
+	}
+
+	inline bool indiceEnRangoAncho(int indice) const {
+		return 0 <= indice && indice < _ancho;
+	}
+
 	inline int ancho() const{
 		return _ancho;
 	}
@@ -105,12 +115,9 @@ public:
 		return *this + (-otra);
 	}
 	
-	Matriz<T> operator*(int escalar) const {
-		return crearMatrizAPartirDeOtraAplicandoFuncAElementos(*this, MultiplicarPorEscalarMatrizFunctor<T, int>(escalar));
-	}
-	
-	Matriz<T> operator*(double escalar) const {
-		return crearMatrizAPartirDeOtraAplicandoFuncAElementos(*this, MultiplicarPorEscalarMatrizFunctor<T, double>(escalar));
+	template <class U>
+	Matriz<T> operator*(U escalar) const {
+		return crearMatrizAPartirDeOtraAplicandoFuncAElementos(*this, MultiplicarPorEscalarMatrizFunctor<T, U>(escalar));
 	}
 	/*
 	Matriz<T> operator/(int escalar) const {
@@ -126,6 +133,30 @@ public:
 		return crearMatrizAPartirDeOtraAplicandoFuncAElementos(*this, SaturarMatrizAMatrizCharFunctor<T>());
 	}
 	
+	Matriz<T> filaComoMatriz(int fila) const {
+		assert(indiceEnRangoAlto(fila));
+		Matriz<T> r = Matri<T>(1, _ancho, T());
+		for (int i = 0; i < _ancho; i++) {
+			r[1][i] = _matriz[fila][i];
+		}
+
+		return r;
+	}
+
+	Matriz<T> submatriz(int filaSup, int colIzq, int filaInf, int colDer) const {
+		assert(indiceEnRangoAlto(filaSup) && indiceEnRangoAlto(filaInf) && indiceEnRangoAncho(colIzq) && indiceEnRangoAncho(colDer) &&
+			filaSup <= filaInf && colIzq <= colDer);
+		Matriz<T> r = Matriz<T>(filaInf - filaSup + 1, colDer - colIzq + 1, T());
+
+		for (int i = 0; i < r._alto; i++) {
+			for (int j = 0; j < r._ancho; j++) {
+				r[i][j] = _matriz[filaSup + i][colDer + j];
+			}
+		}
+
+		return r;
+	}
+
 	//Modifica la matriz original.
 	//Func es de tipo T fun(int fila, int columna, T elementoActual) donde fila, columna es la posicion de la matriz que se recorre y elementoActual es el elemento actual de la matriz que se recorre.
 	template<class Func> Matriz<T>& aplicarFuncAElementos(Func func) {
@@ -136,6 +167,16 @@ public:
 		}
 		return *this;
 	}
+
+	void mostrar() const {
+		for (int i = 0; i < _alto; i++) {
+			for (int j = 0; j < _ancho; j++) {
+				cout << _matriz[i][j] << " ";
+			}
+			cout << endl;
+		}
+	}
+
 private:
 	vector<vector<T> > _matriz;
 	int _ancho;
