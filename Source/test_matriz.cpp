@@ -108,4 +108,74 @@ int main(){
 	x.mostrar();
 	cout << endl;
 
+	/*
+
+	2x1 + 3x2 + 4x3 = 5
+	1x1 - 2x2 + 2x3 = 6
+	3x1 + 4x2 + 2x3 = 7
+
+	P=(0,1,2)
+
+	3x1 + 4x2 + 2x3 = 7					3x1	+ 4x2		+ 2x3	= 7
+	1x1 - 2x2 + 2x3 = 6		m21 = 1/3	0x1	+ -10/3x2	+ 4/3x3	= 11/3
+	2x1 + 3x2 + 4x3 = 5		m31 = 2/3	0x1	+ 1/3x2		+ 8/3x3	= 1/3
+
+	P=(2,1,0)
+
+	3x1	+ 4x2		+ 2x3	= 7							3x1	+ 4x2		+ 2x3	= 7
+	0x1	+ 1/3x2		+ 8/3x3	= 1/3						0x1	+ 1/3x2		+ 8/3x3	= 1/3
+	0x1	+ -10/3x2	+ 4/3x3	= 11/3		m32 = -10		0x1	+ 0x2		+ 84/3x3	= 21/3
+
+	P=(2,0,1)
+
+
+		 0 0 1
+	MP = 1 0 0
+		 0 1 0
+
+		1		0		0
+	L =	-1/3	1		0
+		-2/3	10	1
+
+				3	4		2			3	4			2
+	PA = U =	0	1/3		8/3		=	0	0,333333	2,666666
+				0	0		84/3		0	0			28
+
+			7			7
+	Pb =	1/3		=	0,333333
+			21/3		7
+	*/
+	
+	MatrizDouble A = MatrizDouble(3, 3, 0);
+	A[0][0] = 2;	A[0][1] = 3;	A[0][2] = 4;
+	A[1][0] = 1;	A[1][1] = -2;	A[1][2] = 2;
+	A[2][0] = 3;	A[2][1] = 4;	A[2][2] = 2;
+
+	b = MatrizDouble(3, 1, 0);
+	b[0][0] = 5;
+	b[1][0] = 6;
+	b[2][0] = 7;
+
+	cout << "A" << endl;
+	A.mostrar();
+	cout << endl;
+	cout << "b" << endl;
+	b.mostrar();
+	cout << endl;
+	SistemaDeEcuaciones::ResultadosDeEliminacionGausseana<double> res = sde.eliminacionGausseana<double>(A, b);
+	cout << "A final" << endl;
+	res.matrizLuegoDeEliminacionGausseana.mostrar();
+	cout << endl;
+	cout << "Pb final" << endl;
+	res.resultadosLuegoDeEliminacionGausseana.mostrar();
+	cout << endl;
+	cout << "MP final" << endl;
+	res.matrizDeParticion.mostrar();
+	cout << endl;
+	cout << "L" << endl;
+	res.L.mostrar();
+	cout << endl;
+	cout << "U" << endl;
+	res.U.mostrar();
+	cout << endl;
 }

@@ -115,10 +115,33 @@ public:
 		return *this + (-otra);
 	}
 	
+	Matriz<T> operator*(const Matriz<T> &otra) const {
+		assert(_ancho == otra._alto);
+		int m = _alto;
+		int n = _ancho;
+		int s = otra._ancho;
+
+		Matriz<T> r = Matriz<T>(m, s, 0);
+		T sum = 0;
+		for (int f = 0; f < m; f++) {
+			for (int c = 0; c < s; c++) {
+				sum = 0;
+				for (int k = 0; k < n; k++) {
+					sum += _matriz[f][k] * otra._matriz[k][c];
+				}
+
+				r._matriz[f][c] = sum;
+			}
+		}
+
+		return r;
+	}
+
 	template <class U>
 	Matriz<T> operator*(U escalar) const {
 		return crearMatrizAPartirDeOtraAplicandoFuncAElementos(*this, MultiplicarPorEscalarMatrizFunctor<T, U>(escalar));
 	}
+
 	/*
 	Matriz<T> operator/(int escalar) const {
 		return *this * (1.0/(double)escalar);
@@ -135,12 +158,28 @@ public:
 	
 	Matriz<T> filaComoMatriz(int fila) const {
 		assert(indiceEnRangoAlto(fila));
-		Matriz<T> r = Matri<T>(1, _ancho, T());
+		Matriz<T> r = Matriz<T>(1, _ancho, T());
 		for (int i = 0; i < _ancho; i++) {
-			r[1][i] = _matriz[fila][i];
+			r[0][i] = _matriz[fila][i];
 		}
 
 		return r;
+	}
+
+	Matriz<T> & agreagrleAFilaIOtraFila(int filaI, const Matriz<T> &otraFila) {
+		assert(_ancho == otraFila._ancho && otraFila._alto == 1);
+
+		return agreagrleAFilaIOtraFila(filaI, otraFila[0]);
+	}
+
+	Matriz<T> & agreagrleAFilaIOtraFila(int filaI, const vector<T> &otraFila) {
+		assert(_ancho == otraFila.size());
+		
+		for (int c = 0; c < _ancho; c++) {
+			_matriz[filaI][c] += otraFila[c];
+		}
+
+		return *this;
 	}
 
 	Matriz<T> submatriz(int filaSup, int colIzq, int filaInf, int colDer) const {
