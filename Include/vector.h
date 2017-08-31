@@ -4,6 +4,9 @@
 class Vector3D {
 public:
 	Vector3D(double x, double y, double z);
+
+	Vector3D normalizar() const;
+	double norma() const;
 private:
 	double _x;
 	double _y;
