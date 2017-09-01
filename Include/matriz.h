@@ -6,6 +6,8 @@
 #include <assert.h>
 #include <iostream>
 
+#include "vector.h"
+
 using namespace std;
 
 template <class T> class Matriz;
@@ -56,6 +58,18 @@ public:
 	
 		_matriz = vector<vector<T> >(alto, vector<T>(ancho,valorInicial));
 	}
+
+	Matriz(int alto, int ancho, const T *m) {
+		_alto = alto;
+		_ancho = ancho;
+		_matriz = vector<vector<T> >(alto, vector<T>(ancho, 0));
+
+		for (int i = 0; i < alto; i++) {
+			for (int j = 0; j < ancho; j++) {
+				_matriz[i][j] = m[i*ancho + j];
+			}
+		}
+	}
 	
 	~Matriz(){
 	}
@@ -97,6 +111,22 @@ public:
 	
 	inline int alto() const {
 		return _alto;
+	}
+
+	Vector3D rangoDeTresElementosEnYX(int y, int x) const {
+		assert(x < _ancho && y < _alto);
+
+		double a = (double)_matriz[y][x];
+		double b = 0.0;
+		double c = 0.0;
+
+		if (x + 1 < _ancho) {
+			double b = (double)_matriz[y][x + 1];
+			if (x + 2 < _ancho)
+				double c = (double)_matriz[y][x + 2];
+		}
+
+		return Vector3D(a, b, c);
 	}
 	
 	//Deben tener el mismo tamaño.
@@ -151,6 +181,20 @@ public:
 		return *this * (1.0/escalar);
 	}
 	*/
+
+	//Crea puntero. El usuario debe encargarse de liberar la memoria.
+	T* comoPuntero() const {
+		T * ret = new T[_ancho*_alto];
+
+		for (int i = 0; i < _alto; i++) {
+			for (int j = 0; j < _ancho; j++) {
+				ret[i*_ancho + j] = _matriz[i][j];
+			}
+		}
+
+		return ret;
+	}
+
 	//Satura los valores entre 0 y 255
 	Matriz<T> saturar() const {
 		return crearMatrizAPartirDeOtraAplicandoFuncAElementos(*this, SaturarMatrizAMatrizCharFunctor<T>());
@@ -189,7 +233,7 @@ public:
 
 		for (int i = 0; i < r._alto; i++) {
 			for (int j = 0; j < r._ancho; j++) {
-				r[i][j] = _matriz[filaSup + i][colDer + j];
+				r[i][j] = _matriz[filaSup + i][colIzq + j];
 			}
 		}
 

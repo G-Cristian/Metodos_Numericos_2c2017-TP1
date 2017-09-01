@@ -79,13 +79,15 @@ public:
 	}
 
 	//LUx = Pb
-	template<class T> Matriz<T> resolverAPartirDePLU(const Matriz<T> &Pb, const Matriz<T> &L, const Matriz<T> &U) const {
+	template<class T> Matriz<T> resolverAPartirDePLU(const Matriz<T> &b, const MatrizInt &P, const Matriz<T> &L, const Matriz<T> &U) const {
 		//PA = LU
 		//Ax = b
 		//PAx = Pb
 		//LUx = Pb
 		//Ux = y
 		//Ly = Pb
+
+		Matriz<T> Pb = (Matriz<T>)(P) * b;
 
 		Matriz<T> y = resolverAPartirDeTriangularInferior(L, Pb);
 

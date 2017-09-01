@@ -10,17 +10,22 @@ Vector3D::Vector3D(double x, double y, double z)
  _y = y;
  _z = z;
 	
-	}
+}
+
+bool Vector3D::esCero()const
+{
+	return _x == 0.0 && _y == 0.0 && _z == 0.0;
+}
 
 Vector3D Vector3D::normalizar() const
 {	
 	double n = norma();
 	return Vector3D(_x/n, _y/n, _z/n);
-	}
+}
 
 
 double Vector3D::norma() const
 {
 	return sqrt( pow(_x,2) + pow(_y,2) + pow(_z,2) );	
-	}
+}
 
