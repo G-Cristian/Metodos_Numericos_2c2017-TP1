@@ -27,18 +27,33 @@ int main() {
 
 		circulos.push_back(circ);
 	}
+	grabarImagen(circuloMascara, "out.ppm");
 	
 	Rectangulo circuloBoundingRect = circuloMascara.subRectanguloConImagenReal();
+
 	double radio = circuloBoundingRect.ancho() / 2;
-	Circulo circ = Circulo(circuloBoundingRect.izquierda() + radio, circuloBoundingRect.arriba() + radio, radio);
+	Circulo circ = Circulo(0, 0, radio);
+	
 	vector<Vector3D> luces = vector<Vector3D>();
 	for (int i = 0; i < 12; i++) {
-		pair<int, int> pos = circulos[i].posicionPixelMasBrillante();
-		Vector3D l = circ.normalEnPuntoXY(pos.first, pos.second);
-		luces.push_back(Vector3D(-l.x(), -l.y(), -l.z()));
+		pair<int, int> pos = circulos[i].subImagen(circuloBoundingRect).posicionPixelMasBrillante();
+		Vector3D l = circ.normalEnPuntoXY(pos.first - radio, -pos.second + radio);
+		luces.push_back(Vector3D(-l.x(), -l.y(), -l.z()).normalizar());
 	}
-	//grabarImagen(circuloMascara.subImagen(circuloBoundingRect), "a.ppm");
-
+	for (int i = 0; i < 12; i++) {
+		cout << luces[i].x() << " " << luces[i].y() << " " << luces[i].z() << endl;
+	}
+	/*
+	grabarImagen(circuloMascara.subImagen(circuloBoundingRect), "a.ppm");
+	for (int i = 0; i < 12; i++) {
+		stringstream ss;
+		ss.str("");
+		ss.clear();
+		ss << "a." << i << ".ppm";
+		grabarImagen(circulos[i].subImagen(circuloBoundingRect), ss.str());
+	}
+	*/
+	
 	return 0;
 }
 
