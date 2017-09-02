@@ -18,6 +18,8 @@ public:
 	inline double ancho() const { return _right - _left + 1; }
 	inline double alto() const { return _bottom - _top + 1; }
 
+	inline bool estaPuntoDentro(int x, int y) const { return _left <= x && x <= _right && _top <= y && y <= _bottom; }
+
 private:
 	double _left;
 	double _top;

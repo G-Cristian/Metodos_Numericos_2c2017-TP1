@@ -26,6 +26,6 @@ Vector3D Vector3D::normalizar() const
 
 double Vector3D::norma() const
 {
-	return sqrt( pow(_x,2) + pow(_y,2) + pow(_z,2) );	
+	return sqrt( _x*_x + _y*_y + _z*_z );	
 }
 

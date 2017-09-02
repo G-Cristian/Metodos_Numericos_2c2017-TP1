@@ -121,12 +121,23 @@ public:
 		double c = 0.0;
 
 		if (x + 1 < _ancho) {
-			double b = (double)_matriz[y][x + 1];
+			b = (double)_matriz[y][x + 1];
 			if (x + 2 < _ancho)
-				double c = (double)_matriz[y][x + 2];
+				c = (double)_matriz[y][x + 2];
 		}
 
 		return Vector3D(a, b, c);
+	}
+
+	void escribirTresElementosEnYX(int y, int x, const Vector3D &elementos) {
+		assert(x < _ancho && y < _alto);
+
+		_matriz[y][x] = (T)elementos.x();
+		if (x + 1 < _ancho) {
+			_matriz[y][x + 1] = (T)elementos.y();
+			if (x + 2 < _ancho)
+				_matriz[y][x + 2] = (T)elementos.z();
+		}
 	}
 	
 	//Deben tener el mismo tamaño.

@@ -15,10 +15,9 @@ Circulo::Circulo(double x, double y, double radio)
 
 Vector3D Circulo::normalEnPuntoXY(double x, double y) const
 {
-	double z = sqrt(pow(_radius, 2) - pow(x - _x, 2) - pow(y - _y, 2));
-	Vector3D v = Vector3D(x - _x, y - _y, z);
+	double z = sqrt((_radius*_radius) - ((x - _x)*(x - _x)) - ((y - _y)*(y - _y)));
 
-	return v;
+	return Vector3D(x - _x, y - _y, z);
 }
 
 

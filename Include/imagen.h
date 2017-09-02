@@ -27,7 +27,18 @@ public:
 	//Si se le pasa una mascara descarta lo negro que bordea la imagen.
 	Rectangulo subRectanguloConImagenReal() const;
 
+	double brilloDelPixel(int x, int y) const;
+	double brilloDeRegion(const Rectangulo &region) const;
 	pair<int, int> posicionPixelMasBrillante() const;
+	pair<int, int> posicionPixelMasBrillanteDentroDeRegion(const Rectangulo &region) const;
+	//offset define la region siendo cuantos pixel al rededor del pixel alctual se verifican.
+	//Ejemplo: pixel actual = (x, y) entonces la region es [x-offset, x+oofset], [y-offset, y+offset]
+	Rectangulo regionMasBrillante(int offset) const;
+	//offset define la region siendo cuantos pixel al rededor del pixel alctual se verifican.
+	//Ejemplo: pixel actual = (x, y) entonces la region es [x-offset, x+oofset], [y-offset, y+offset]
+	Rectangulo regionMasBrillanteDentroDeRegion(int offset, const Rectangulo &region) const;
+	void pintarPixel(int x, int y, int r, int g, int b);
+	void pintarBordeDeRegion(const Rectangulo &region, int r, int g, int b);
 private:
 	MatrizUChar _datos;
 	int _canales;
