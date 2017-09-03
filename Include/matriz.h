@@ -6,6 +6,8 @@
 #include <assert.h>
 #include <iostream>
 
+#include "vector.h"
+
 using namespace std;
 
 template <class T> class Matriz;
@@ -56,13 +58,47 @@ public:
 	
 		_matriz = vector<vector<T> >(alto, vector<T>(ancho,valorInicial));
 	}
+
+	Matriz(int alto, int ancho, const T *m) {
+		_alto = alto;
+		_ancho = ancho;
+		_matriz = vector<vector<T> >(alto, vector<T>(ancho, 0));
+
+		for (int i = 0; i < alto; i++) {
+			for (int j = 0; j < ancho; j++) {
+				_matriz[i][j] = m[i*ancho + j];
+			}
+		}
+	}
+
+	Matriz(const Vector3D &vector) {
+		_ancho = 1;
+		_alto = 3;
+		_matriz = vector<vector<T> >(_alto, vector<T>(_ancho, T()));
+
+		_matriz[0][0] = (T)vector.x();
+		_matriz[1][0] = (T)vector.y();
+		_matriz[2][0] = (T)vector.z();
+	}
+
+	Matriz(const vector<Vector3D> &filas) {
+		_ancho = 3;
+		_alto = filas.size();
+		_matriz = vector<vector<T> >(_alto, vector<T>(_ancho, T()));
+
+		for (int i = 0; i < _alto;i++) {
+			_matriz[i][0] = (T)filas[i].x();
+			_matriz[i][1] = (T)filas[i].y();
+			_matriz[i][2] = (T)filas[i].z();
+		}
+	}
 	
 	~Matriz(){
 	}
 	
 	//operador para castear
 	template<class tipoACastear> operator Matriz<tipoACastear>()const {
-		Matriz<tipoACastear> r = Matriz<tipoACastear>(_alto, _ancho, 0);
+		Matriz<tipoACastear> r = Matriz<tipoACastear>(_alto, _ancho, tipoACastear());
 		
 		for(int i = 0; i < _alto; i++){
 			for(int j = 0; j < _ancho; j++){
@@ -98,6 +134,33 @@ public:
 	inline int alto() const {
 		return _alto;
 	}
+
+	Vector3D rangoDeTresElementosEnYX(int y, int x) const {
+		assert(x < _ancho && y < _alto);
+
+		double a = (double)_matriz[y][x];
+		double b = 0.0;
+		double c = 0.0;
+
+		if (x + 1 < _ancho) {
+			b = (double)_matriz[y][x + 1];
+			if (x + 2 < _ancho)
+				c = (double)_matriz[y][x + 2];
+		}
+
+		return Vector3D(a, b, c);
+	}
+
+	void escribirTresElementosEnYX(int y, int x, const Vector3D &elementos) {
+		assert(x < _ancho && y < _alto);
+
+		_matriz[y][x] = (T)elementos.x();
+		if (x + 1 < _ancho) {
+			_matriz[y][x + 1] = (T)elementos.y();
+			if (x + 2 < _ancho)
+				_matriz[y][x + 2] = (T)elementos.z();
+		}
+	}
 	
 	//Deben tener el mismo tamaño.
 	Matriz<T> operator+(const Matriz<T> &otra) const {
@@ -121,7 +184,7 @@ public:
 		int n = _ancho;
 		int s = otra._ancho;
 
-		Matriz<T> r = Matriz<T>(m, s, 0);
+		Matriz<T> r = Matriz<T>(m, s, T());
 		T sum = 0;
 		for (int f = 0; f < m; f++) {
 			for (int c = 0; c < s; c++) {
@@ -151,6 +214,34 @@ public:
 		return *this * (1.0/escalar);
 	}
 	*/
+	T norma() const {
+		assert(_alto == 1 || _ancho == 1);
+
+		T sum = T();
+		int n = (_alto == 1) ? _ancho : _alto;
+		for (int i = 0; i < n; i++) {
+			if (_alto == 1)
+				sum += _matriz[0][i] * _matriz[0][i];
+			else
+				sum += _matriz[i][0] * _matriz[i][0];
+		}
+
+		return (T)sqrt(sum);
+	}
+
+	//Crea puntero. El usuario debe encargarse de liberar la memoria.
+	T* comoPuntero() const {
+		T * ret = new T[_ancho*_alto];
+
+		for (int i = 0; i < _alto; i++) {
+			for (int j = 0; j < _ancho; j++) {
+				ret[i*_ancho + j] = _matriz[i][j];
+			}
+		}
+
+		return ret;
+	}
+
 	//Satura los valores entre 0 y 255
 	Matriz<T> saturar() const {
 		return crearMatrizAPartirDeOtraAplicandoFuncAElementos(*this, SaturarMatrizAMatrizCharFunctor<T>());
@@ -189,7 +280,7 @@ public:
 
 		for (int i = 0; i < r._alto; i++) {
 			for (int j = 0; j < r._ancho; j++) {
-				r[i][j] = _matriz[filaSup + i][colDer + j];
+				r[i][j] = _matriz[filaSup + i][colIzq + j];
 			}
 		}
 
