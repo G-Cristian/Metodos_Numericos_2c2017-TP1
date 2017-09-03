@@ -7,27 +7,29 @@
 #include "../Include/circulo.h"
 #include "../Include/rectangulo.h"
 #include "../Include/imagen.h"
-#include "../ppmloader/ppmloader/ppmloader.h"
+#include "../Include/manejadorImagenes.h"
 
 
 using namespace std;
 
-Imagen cargarImagen(string fileName);
-void grabarImagen(const Imagen &img, string fileName);
+//Imagen cargarImagen(string fileName);
+//void grabarImagen(const Imagen &img, string fileName);
 
 int main() {
-	Imagen circuloMascara = cargarImagen("mate.mask.ppm");
+	ManejadorImagenes mi = ManejadorImagenes();
+	Imagen circuloMascara = mi.abrirImagenPPM("mate.mask.ppm");
 	vector<Imagen> circulos = vector<Imagen>();
 	stringstream ss;
 	for (int i = 0; i < 12; i++) {
 		ss.str("");
 		ss.clear();
 		ss << "mate." << i << ".ppm";
-		Imagen circ = cargarImagen(ss.str());
+		Imagen circ = mi.abrirImagenPPM(ss.str());
 
 		circulos.push_back(circ);
 	}
-	//grabarImagen(circuloMascara, "out.ppm");
+
+	mi.guardarImagenPPM(circuloMascara, "out.ppm");
 	
 	Rectangulo circuloBoundingRect = circuloMascara.subRectanguloConImagenReal();
 
@@ -46,7 +48,7 @@ int main() {
 		cout << luces[i].x() << " " << luces[i].y() << " " << luces[i].z() << endl;
 	}
 	
-	/*
+	
 	for (int i = 0; i < 12; i++) {
 		Imagen img = circulos[i].subImagen(circuloBoundingRect);
 		pair<int, int> pos = img.posicionPixelMasBrillante();
@@ -57,7 +59,7 @@ int main() {
 		ss.str("");
 		ss.clear();
 		ss << "img." << i << ".(1).ppm";
-		grabarImagen(img1, ss.str());
+		mi.guardarImagenPPM(img1, ss.str());
 
 		Rectangulo r = img.regionMasBrillante(offset);
 		Imagen img2 = img;
@@ -66,7 +68,7 @@ int main() {
 		ss.str("");
 		ss.clear();
 		ss << "img." << i << ".(2).ppm";
-		grabarImagen(img2, ss.str());
+		mi.guardarImagenPPM(img2, ss.str());
 
 		pos = img.posicionPixelMasBrillanteDentroDeRegion(r);
 		Imagen img3 = img;
@@ -75,25 +77,25 @@ int main() {
 		ss.str("");
 		ss.clear();
 		ss << "img." << i << ".(3).ppm";
-		grabarImagen(img3, ss.str());
+		mi.guardarImagenPPM(img3, ss.str());
 
 	}
-	*/
-	/*
-	grabarImagen(circuloMascara.subImagen(circuloBoundingRect), "a.ppm");
+	
+	
+	mi.guardarImagenPPM(circuloMascara.subImagen(circuloBoundingRect), "a.ppm");
 	for (int i = 0; i < 12; i++) {
 		stringstream ss;
 		ss.str("");
 		ss.clear();
 		ss << "a." << i << ".ppm";
-		grabarImagen(circulos[i].subImagen(circuloBoundingRect), ss.str());
+		mi.guardarImagenPPM(circulos[i].subImagen(circuloBoundingRect), ss.str());
 	}
-	*/
+	
 	
 	return 0;
 }
 
-
+/*
 Imagen cargarImagen(string fileName) {
 	uchar* data = NULL;
 	int width = 0, height = 0;
@@ -105,7 +107,7 @@ Imagen cargarImagen(string fileName) {
 		throw std::runtime_error("test_load failed");
 	}
 
-	Imagen img = Imagen(height, width * 3, data, 3);
+	Imagen img = Imagen(height, width, data, 3);
 
 	delete[] data;
 
@@ -126,3 +128,4 @@ void grabarImagen(const Imagen &img, string fileName) {
 		std::cout << "ERROR: couldn't save Image to ppm file" << std::endl;
 	}
 }
+*/
