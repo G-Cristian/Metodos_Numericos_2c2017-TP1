@@ -24,7 +24,7 @@ public:
 		Matriz<T> resultadosLuegoDeEliminacionGausseana;
 		Matriz<T> L;
 		Matriz<T> U;
-		MatrizInt matrizDeParticion;
+		Matriz<T> matrizDeParticion;
 	};
 
 	SistemaDeEcuaciones() {}
@@ -70,7 +70,7 @@ public:
 			}
 		}
 		
-		MatrizInt matrizDeParticion = MatrizFactory::matrizDeParticion(vectorDeParticion);
+		Matriz<T> matrizDeParticion = (Matriz<T>)MatrizFactory::matrizDeParticion(vectorDeParticion);
 		matrizFinal = (Matriz<T>)matrizDeParticion*matrizFinal;
 		Matriz<T> U = obtenerUAPartirDeM<T>(matrizFinal);
 		resultadosFinal = (Matriz<T>)(matrizDeParticion)*resultadosFinal;
@@ -79,7 +79,7 @@ public:
 	}
 
 	//LUx = Pb
-	template<class T> Matriz<T> resolverAPartirDePLU(const Matriz<T> &b, const MatrizInt &P, const Matriz<T> &L, const Matriz<T> &U) const {
+	template<class T> Matriz<T> resolverAPartirDePLU(const Matriz<T> &b, const Matriz<T> &P, const Matriz<T> &L, const Matriz<T> &U) const {
 		//PA = LU
 		//Ax = b
 		//PAx = Pb
@@ -87,7 +87,7 @@ public:
 		//Ux = y
 		//Ly = Pb
 
-		Matriz<T> Pb = (Matriz<T>)(P) * b;
+		Matriz<T> Pb = P * b;
 
 		Matriz<T> y = resolverAPartirDeTriangularInferior(L, Pb);
 
@@ -170,7 +170,7 @@ private:
 		assert(m.ancho() == m.alto());
 
 		int n = m.alto();
-		Matriz<T> U = Matriz<T>(n, n, 0);
+		Matriz<T> U = Matriz<T>(n, n, T());
 
 		for (int f = 0; f < n; f++) {
 			for (int c = f; c < n; c++) {

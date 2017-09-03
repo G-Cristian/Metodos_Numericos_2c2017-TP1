@@ -29,7 +29,7 @@ int main() {
 		circulos.push_back(circ);
 	}
 
-	mi.guardarImagenPPM(circuloMascara, "out.ppm");
+	//mi.guardarImagenPPM(circuloMascara, "out.ppm");
 	
 	Rectangulo circuloBoundingRect = circuloMascara.subRectanguloConImagenReal();
 
@@ -42,13 +42,13 @@ int main() {
 		Rectangulo regionMasBrillante = img.regionMasBrillante(offset);
 		pair<int, int> pos = img.posicionPixelMasBrillanteDentroDeRegion(regionMasBrillante);
 		Vector3D l = circ.normalEnPuntoXY(pos.first - radio, -pos.second + radio);
-		luces.push_back(Vector3D(-l.x(), -l.y(), -l.z()).normalizar());
+		luces.push_back(Vector3D(l.x(), l.y(), l.z()).normalizar());
 	}
 	for (int i = 0; i < 12; i++) {
 		cout << luces[i].x() << " " << luces[i].y() << " " << luces[i].z() << endl;
 	}
 	
-	
+	/*
 	for (int i = 0; i < 12; i++) {
 		Imagen img = circulos[i].subImagen(circuloBoundingRect);
 		pair<int, int> pos = img.posicionPixelMasBrillante();
@@ -80,8 +80,8 @@ int main() {
 		mi.guardarImagenPPM(img3, ss.str());
 
 	}
-	
-	
+	*/
+	/*
 	mi.guardarImagenPPM(circuloMascara.subImagen(circuloBoundingRect), "a.ppm");
 	for (int i = 0; i < 12; i++) {
 		stringstream ss;
@@ -90,7 +90,7 @@ int main() {
 		ss << "a." << i << ".ppm";
 		mi.guardarImagenPPM(circulos[i].subImagen(circuloBoundingRect), ss.str());
 	}
-	
+	*/
 	
 	return 0;
 }

@@ -70,13 +70,35 @@ public:
 			}
 		}
 	}
+
+	Matriz(const Vector3D &vector) {
+		_ancho = 1;
+		_alto = 3;
+		_matriz = vector<vector<T> >(_alto, vector<T>(_ancho, T()));
+
+		_matriz[0][0] = (T)vector.x();
+		_matriz[1][0] = (T)vector.y();
+		_matriz[2][0] = (T)vector.z();
+	}
+
+	Matriz(const vector<Vector3D> &filas) {
+		_ancho = 3;
+		_alto = filas.size();
+		_matriz = vector<vector<T> >(_alto, vector<T>(_ancho, T()));
+
+		for (int i = 0; i < _alto;i++) {
+			_matriz[i][0] = (T)filas[i].x();
+			_matriz[i][1] = (T)filas[i].y();
+			_matriz[i][2] = (T)filas[i].z();
+		}
+	}
 	
 	~Matriz(){
 	}
 	
 	//operador para castear
 	template<class tipoACastear> operator Matriz<tipoACastear>()const {
-		Matriz<tipoACastear> r = Matriz<tipoACastear>(_alto, _ancho, 0);
+		Matriz<tipoACastear> r = Matriz<tipoACastear>(_alto, _ancho, tipoACastear());
 		
 		for(int i = 0; i < _alto; i++){
 			for(int j = 0; j < _ancho; j++){
@@ -162,7 +184,7 @@ public:
 		int n = _ancho;
 		int s = otra._ancho;
 
-		Matriz<T> r = Matriz<T>(m, s, 0);
+		Matriz<T> r = Matriz<T>(m, s, T());
 		T sum = 0;
 		for (int f = 0; f < m; f++) {
 			for (int c = 0; c < s; c++) {
@@ -192,6 +214,20 @@ public:
 		return *this * (1.0/escalar);
 	}
 	*/
+	T norma() const {
+		assert(_alto == 1 || _ancho == 1);
+
+		T sum = T();
+		int n = (_alto == 1) ? _ancho : _alto;
+		for (int i = 0; i < n; i++) {
+			if (_alto == 1)
+				sum += _matriz[0][i] * _matriz[0][i];
+			else
+				sum += _matriz[i][0] * _matriz[i][0];
+		}
+
+		return (T)sqrt(sum);
+	}
 
 	//Crea puntero. El usuario debe encargarse de liberar la memoria.
 	T* comoPuntero() const {
