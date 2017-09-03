@@ -8,7 +8,7 @@ Imagen::Imagen(const MatrizUChar &datos, int canales):_datos(datos) {
 	_canales = canales;
 }
 //alto y ancho representan las dimenciones en *datos (es decir el ancho de la imagen va a ser ancho / canales).
-Imagen::Imagen(int alto, int ancho, const unsigned char *datos, int canales) : _datos(MatrizUChar(alto, ancho, datos)) {
+Imagen::Imagen(int alto, int ancho, const unsigned char *datos, int canales) : _datos(MatrizUChar(alto, ancho*canales, datos)) {
 	_canales = canales;
 }
 
