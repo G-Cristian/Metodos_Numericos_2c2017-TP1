@@ -62,7 +62,7 @@ public:
 	Matriz(int alto, int ancho, const T *m) {
 		_alto = alto;
 		_ancho = ancho;
-		_matriz = vector<vector<T> >(alto, vector<T>(ancho, 0));
+		_matriz = vector<vector<T> >(alto, vector<T>(ancho, T()));
 
 		for (int i = 0; i < alto; i++) {
 			for (int j = 0; j < ancho; j++) {
@@ -95,7 +95,15 @@ public:
 	
 	~Matriz(){
 	}
-	
+	/*
+	Matriz<T> & operator=(const Matriz<T> &otra) {
+		_alto = otra._alto;
+		_ancho = otra._ancho;
+		_matriz = otra._matriz;
+
+		return *this;
+	}
+	*/
 	//operador para castear
 	template<class tipoACastear> operator Matriz<tipoACastear>()const {
 		Matriz<tipoACastear> r = Matriz<tipoACastear>(_alto, _ancho, tipoACastear());

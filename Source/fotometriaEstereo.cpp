@@ -5,7 +5,7 @@
 
 FotometriaEstereo::FotometriaEstereo(const Imagen &mascaraCirculo, const vector<Imagen> &imagenesCirculos, const Imagen &mascaraImagenesACalcular, const vector<Imagen> &imagenesACalcular, const vector<int> &imagenesAUsar)
 	:_mascaraCirculo(mascaraCirculo), _mascaraImagenesACalcular(mascaraImagenesACalcular), _matrizLucesAUsar(MatrizDouble(0, 0, 0.0)), _M(MatrizDouble(1,1,0.0)), _V(MatrizDouble(1,1,0.0)),
-	_tablaIndicesNumeroDePixel(MatrizInt(1,1,(int)-1)){
+	_tablaIndicesNumeroDePixel(MatrizInt(1,1,(int)-1)), _cantidadDePixelsDeImagen(0){
 	_imagenesCirculos = imagenesCirculos;
 	//_imagenesACalcular = imagenesACalcular;
 	_imagenesAUsar = imagenesAUsar;
@@ -26,6 +26,7 @@ FotometriaEstereo::~FotometriaEstereo() {
 }
 
 pair<Matriz<Vector3D>, MatrizDouble> FotometriaEstereo::resolverNormalesYProfundidades() {
+	calibrar();
 	Matriz<Vector3D> normales = obtenerNormales();
 	MatrizDouble profundidades = obtenerProfundidades(normales);
 
