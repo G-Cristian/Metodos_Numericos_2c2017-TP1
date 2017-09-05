@@ -18,6 +18,7 @@ public:
 	//Representa el ancho de la imagen EN PIXELS (es decir que si la imagen es a color con 3 canales devuelve al ancho de la matriz interna dividido 3).
 	inline int ancho() const { return (int)(_datos.ancho() / _canales); }
 	inline int alto() const { return _datos.alto(); }
+	inline int canales() const { return _canales; }
 	//Si tiene menos de 3 canales las ultimas posiciones del vector tienen 0.0.
 	inline Vector3D pixelEnXY(int x, int y) const { return _datos.rangoDeTresElementosEnYX(y, x*_canales); }
 

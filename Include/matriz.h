@@ -287,6 +287,18 @@ public:
 		return r;
 	}
 
+	Matriz<T> transpuesta() const {
+		Matriz<T> t = Matriz<T>(_ancho, _alto, T());
+
+		for (int i = 0; i < _alto; i++) {
+			for (int j = 0; j < _ancho; j++) {
+				t[j][i] = _matriz[i][j];
+			}
+		}
+
+		return t;
+	}
+
 	//Modifica la matriz original.
 	//Func es de tipo T fun(int fila, int columna, T elementoActual) donde fila, columna es la posicion de la matriz que se recorre y elementoActual es el elemento actual de la matriz que se recorre.
 	template<class Func> Matriz<T>& aplicarFuncAElementos(Func func) {
