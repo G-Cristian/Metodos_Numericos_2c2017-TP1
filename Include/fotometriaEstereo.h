@@ -2,6 +2,7 @@
 #define _FOTOMETRIAESTEREO_H_
 
 #include "matriz.h"
+#include "MatrizEsparsa.h"
 #include "imagen.h"
 #include <vector>
 
@@ -9,12 +10,19 @@ using namespace std;
 
 class FotometriaEstereo {
 public:
+	struct Vertice {
+		double x;
+		double y;
+		double z;
+		Vector3D normal;
+	};
+
 	FotometriaEstereo(const Imagen &mascaraCirculo, const vector<Imagen> &imagenesCirculos, const Imagen &mascaraImagenesACalcular, const vector<Imagen> &imagenesACalcular, const vector<int> &imagenesAUsar);
 	~FotometriaEstereo();
 
 	inline vector<Vector3D> luces() const { return _luces; }
 
-	pair<Matriz<Vector3D>, MatrizDouble> resolverNormalesYProfundidades();
+	vector<FotometriaEstereo::Vertice> resolverNormalesYProfundidades();
 private:
 	void calibrar();
 	Matriz<Vector3D> obtenerNormales();
@@ -27,7 +35,7 @@ private:
 	void obtenerTablaIndicesNumeroDePixelYCantidad();
 	void obtenerMV(const Matriz<Vector3D> &normales);
 	MatrizDouble obtenerProfundidades(const Matriz<Vector3D> &normales);
-
+	vector<Vertice> obtenerVertices(const Matriz<Vector3D> &normales, const MatrizDouble &profundidades) const;
 
 	Imagen _mascaraCirculo;
 	vector<Imagen> _imagenesCirculos;
@@ -38,8 +46,8 @@ private:
 	vector<Vector3D> _luces;
 	MatrizInt _tablaIndicesNumeroDePixel;
 	int _cantidadDePixelsDeImagen;
-	MatrizDouble _M;
-	MatrizDouble _V;
+	MatrizEsparsa _M;
+	MatrizEsparsa _V;
 };
 
 #endif // !_FOTOMETRIAESTEREO_H_

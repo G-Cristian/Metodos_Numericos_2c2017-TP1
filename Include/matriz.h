@@ -7,10 +7,12 @@
 #include <iostream>
 
 #include "vector.h"
+#include "MatrizEsparsa.h"
 
 using namespace std;
 
 template <class T> class Matriz;
+class MatrizEsparsa;
 
 template<class T> class SumarMatrizFunctor{
 public:
@@ -50,6 +52,19 @@ public:
 	}
 };
 
+template<class T> class CopiarElementosDeMatrizEsparsaFunctor {
+public:
+	CopiarElementosDeMatrizEsparsaFunctor(const MatrizEsparsa &otra) :_otra(otra) {
+
+	}
+
+	T operator()(int fila, int columna, T elemento) {
+		return (T)_otra.enYX(fila, columna);
+	}
+private:
+	MatrizEsparsa _otra;
+};
+
 template <class T> class Matriz{
 public:
 	Matriz(int alto, int ancho, T valorInicial){
@@ -69,6 +84,15 @@ public:
 				_matriz[i][j] = m[i*ancho + j];
 			}
 		}
+	}
+
+	Matriz(const MatrizEsparsa &m) {
+		_ancho = m.ancho();
+		_alto = m.alto();
+
+		_matriz = vector<vector<double> >(_alto, vector<double>(_ancho, 0.0));
+
+		this->aplicarFuncAElementos(CopiarElementosDeMatrizEsparsaFunctor<T>(m));
 	}
 
 	Matriz(const Vector3D &vector) {

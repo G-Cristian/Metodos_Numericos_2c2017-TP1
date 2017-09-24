@@ -2,6 +2,7 @@
 #define _SISTEMA_DE_ECUACIONES_H_
 
 #include "matriz.h"
+#include "MatrizEsparsa.h"
 #include "matrizFactory.h"
 
 #include <assert.h>
@@ -126,6 +127,107 @@ public:
 		}
 
 		return r;
+	}
+
+	//TODO: quizas sacar
+	//'matriz' debe ser Simetrica Definida Positiva.
+	MatrizEsparsa cholesky(const MatrizEsparsa &matriz) {
+		assert(matriz.alto() == matriz.ancho());
+		int alto = matriz.alto();
+		int ancho = matriz.ancho();
+
+		MatrizEsparsa L = MatrizEsparsa(alto, ancho);
+		double l_00 = sqrt(matriz.enYX(0, 0));
+		L.insertarEnYX(0, 0, l_00);
+
+		for (int i = 1; i < alto; i++)
+			L.insertarEnYX(i, 0, matriz.enYX(0, i) / l_00);
+
+		for (int j = 1; j < ancho - 1; j++) {
+			double l_jj = sqrt(matriz.enYX(j, j) - sumatoriaDePrimerosKElementosDeFilaIAlCuadrado(L, j, j));
+			L.insertarEnYX(j, j, l_jj);
+
+			for (int i = j + 1; i < alto; i++) {
+				double sumatoria = 0.0;
+				for (int k = 0; k < i; k++) {
+					sumatoria += L.enYX(i, k) * L.enYX(j, k);
+				}
+				double l_ij = (matriz.enYX(j, i) - sumatoria) / l_jj;
+				L.insertarEnYX(i, j, l_ij);
+			}
+		}
+
+		L.insertarEnYX(alto - 1, ancho - 1, sqrt(matriz.enYX(alto - 1, ancho - 1) - sumatoriaDePrimerosKElementosDeFilaIAlCuadrado(L, alto - 1, alto - 1)));
+
+		return L;
+	}
+	//TODO: quiza sacar
+	double sumatoriaDePrimerosKElementosDeFilaIAlCuadrado(const MatrizEsparsa &L, const int k, const int i) {
+		double sumatoria = 0;
+		double aux = 0.0;
+		for (int j = 0; j < k; j++) {
+			aux = L.enYX(i, j);
+			sumatoria += aux*aux;
+		}
+
+		return sumatoria;
+	}
+
+	//'matriz' debe ser Simetrica Definida Positiva.
+	template<class T> Matriz<T> cholesky(const Matriz<T> &matriz) {
+		assert(matriz.alto() == matriz.ancho());
+		int alto = matriz.alto();
+		int ancho = matriz.ancho();
+
+		Matriz<T> L = Matriz<T>(alto, ancho, T());
+		T l_00 = sqrt(matriz[0][0]);
+		L[0][0] = l_00;
+
+		for (int i = 1; i < alto; i++)
+			L[i][0] = matriz[0][i] / l_00;
+
+		for (int j = 1; j < ancho - 1; j++) {
+			T l_jj = sqrt(matriz[j][j] - sumatoriaDePrimerosKElementosDeFilaIAlCuadrado(L, j, j));
+			L[j][j] = l_jj;
+
+			for (int i = j + 1; i < alto; i++) {
+				T sumatoria = 0.0;
+				for (int k = 0; k < i; k++) {
+					sumatoria += L[i][k] * L[j][k];
+				}
+				T l_ij = (matriz[j][i] - sumatoria) / l_jj;
+				L[i][j] = l_ij;
+			}
+		}
+
+		L[alto - 1][ancho - 1] = sqrt(matriz[alto - 1][ancho - 1] - sumatoriaDePrimerosKElementosDeFilaIAlCuadrado(L, alto - 1, alto - 1));
+
+		return L;
+	}
+
+	template<class T> T sumatoriaDePrimerosKElementosDeFilaIAlCuadrado(const Matriz<T> &L, const int k, const int i) {
+		T sumatoria = 0;
+		T aux = 0.0;
+		for (int j = 0; j < k; j++) {
+			aux = L[i][j];
+			sumatoria += aux*aux;
+		}
+
+		return sumatoria;
+	}
+
+	//LLtx = b
+	//L triangular inferior con diagonal positiva.
+	template<class T> Matriz<T> resolverAPartirDeLLt(const Matriz<T> &b, const Matriz<T> &L) const {
+		//A = LLt
+		//Ax = b
+		//LLtx = b
+		//Ltx = y
+		//Ly = b
+
+		Matriz<T> y = resolverAPartirDeTriangularInferior(L, b);
+
+		return resolverAPartirDeTriangularSuperior(L.transpuesta(), y);
 	}
 
 private:

@@ -4,7 +4,7 @@
 #include "../Include/sistemaDeEcuaciones.h"
 
 FotometriaEstereo::FotometriaEstereo(const Imagen &mascaraCirculo, const vector<Imagen> &imagenesCirculos, const Imagen &mascaraImagenesACalcular, const vector<Imagen> &imagenesACalcular, const vector<int> &imagenesAUsar)
-	:_mascaraCirculo(mascaraCirculo), _mascaraImagenesACalcular(mascaraImagenesACalcular), _matrizLucesAUsar(MatrizDouble(0, 0, 0.0)), _M(MatrizDouble(1,1,0.0)), _V(MatrizDouble(1,1,0.0)),
+	:_mascaraCirculo(mascaraCirculo), _mascaraImagenesACalcular(mascaraImagenesACalcular), _matrizLucesAUsar(MatrizDouble(0, 0, 0.0)), _M(MatrizEsparsa(1,1)), _V(MatrizEsparsa(1,1)),
 	_tablaIndicesNumeroDePixel(MatrizInt(1,1,(int)-1)), _cantidadDePixelsDeImagen(0){
 	_imagenesCirculos = imagenesCirculos;
 	//_imagenesACalcular = imagenesACalcular;
@@ -25,12 +25,12 @@ FotometriaEstereo::~FotometriaEstereo() {
 
 }
 
-pair<Matriz<Vector3D>, MatrizDouble> FotometriaEstereo::resolverNormalesYProfundidades() {
+vector<FotometriaEstereo::Vertice> FotometriaEstereo::resolverNormalesYProfundidades() {
 	calibrar();
 	Matriz<Vector3D> normales = obtenerNormales();
 	MatrizDouble profundidades = obtenerProfundidades(normales);
 
-	return pair<Matriz<Vector3D>, MatrizDouble>(normales, profundidades);
+	return obtenerVertices(normales, profundidades);
 }
 
 void FotometriaEstereo::calibrar() {
@@ -117,7 +117,7 @@ bool FotometriaEstereo::pixelEstaEnImagen(int x, int y, const Imagen &mascara) c
 void FotometriaEstereo::obtenerTablaIndicesNumeroDePixelYCantidad() {
 	int alto = _mascaraImagenesACalcular.alto();
 	int ancho = _mascaraImagenesACalcular.ancho();
-	MatrizInt _tablaIndicesNumeroDePixel = MatrizInt(alto, ancho, (int)-1);
+	_tablaIndicesNumeroDePixel = MatrizInt(alto, ancho, (int)-1);
 	_cantidadDePixelsDeImagen = 0;
 
 	for (int i = 0; i < alto; i++) {
@@ -131,58 +131,68 @@ void FotometriaEstereo::obtenerTablaIndicesNumeroDePixelYCantidad() {
 }
 
 void FotometriaEstereo::obtenerMV(const Matriz<Vector3D> &normales) {
-	_M = MatrizDouble(_cantidadDePixelsDeImagen * 2, _cantidadDePixelsDeImagen, 0.0);
-	_V = MatrizDouble(_cantidadDePixelsDeImagen * 2, 1, 0.0);
+	_M = MatrizEsparsa(_cantidadDePixelsDeImagen * 2, _cantidadDePixelsDeImagen);
+	_V = MatrizEsparsa(_cantidadDePixelsDeImagen * 2, 1);
 	int alto = _mascaraImagenesACalcular.alto();
 	int ancho = _mascaraImagenesACalcular.ancho();
 	int indexActual = 0;
 	for (int i = 0; i < alto; i++) {
 		for (int j = 0; j < ancho; j++) {
-			double nx = normales[i][j].x();
-			double ny = normales[i][j].y();
-			double nz = normales[i][j].z();
-			if (_tablaIndicesNumeroDePixel[i][j+1] >= 0 && _tablaIndicesNumeroDePixel[i+1][j] >= 0) {
-				//(X+1,Y) (X,Y+1) estan en la imagen
-				_M[2 * indexActual][_tablaIndicesNumeroDePixel[i][j]] = 1;
-				_M[2 * indexActual][_tablaIndicesNumeroDePixel[i][j+1]] = -1;
-				_V[2 * indexActual][0] = nx/nz;
+			if (_tablaIndicesNumeroDePixel[i][j] >= 0) {
+				double nx = normales[i][j].x();
+				double ny = normales[i][j].y();
+				double nz = normales[i][j].z();
+				if (j + 1 < ancho && i + 1 < alto && _tablaIndicesNumeroDePixel[i][j + 1] >= 0 && _tablaIndicesNumeroDePixel[i + 1][j] >= 0) {
+					//(X+1,Y) (X,Y+1) estan en la imagen
+					_M.insertarEnYX(2 * indexActual, _tablaIndicesNumeroDePixel[i][j], 1);
+					_M.insertarEnYX(2 * indexActual, _tablaIndicesNumeroDePixel[i][j + 1], -1);
+					_V.insertarEnYX(2 * indexActual, 0, nx / nz);
 
-				_M[2 * indexActual + 1][_tablaIndicesNumeroDePixel[i][j]] = 1;
-				_M[2 * indexActual + 1][_tablaIndicesNumeroDePixel[i+1][j]] = -1;
-				_V[2 * indexActual + 1][0] = ny / nz;
-			}
-			else if (_tablaIndicesNumeroDePixel[i + 1][j] >= 0) {
-				if (_tablaIndicesNumeroDePixel[i][j - 1] >= 0) {
-					_M[2 * indexActual][_tablaIndicesNumeroDePixel[i][j]] = 1;
-					_M[2 * indexActual][_tablaIndicesNumeroDePixel[i][j - 1]] = -1;
-					_V[2 * indexActual][0] = -nx / nz;
-				}
-				_M[2 * indexActual + 1][_tablaIndicesNumeroDePixel[i][j]] = 1;
-				_M[2 * indexActual + 1][_tablaIndicesNumeroDePixel[i + 1][j]] = -1;
-				_V[2 * indexActual + 1][0] = ny / nz;
-			}
-			else if (_tablaIndicesNumeroDePixel[i][j + 1] >= 0) {
-				if (_tablaIndicesNumeroDePixel[i - 1][j] >= 0) {
-					_M[2 * indexActual + 1][_tablaIndicesNumeroDePixel[i][j]] = 1;
-					_M[2 * indexActual + 1][_tablaIndicesNumeroDePixel[i - 1][j]] = -1;
-					_V[2 * indexActual + 1][0] = -ny / nz;
-				}
+					_M.insertarEnYX(2 * indexActual + 1, _tablaIndicesNumeroDePixel[i][j], 1);
+					_M.insertarEnYX(2 * indexActual + 1, _tablaIndicesNumeroDePixel[i + 1][j], -1);
+					_V.insertarEnYX(2 * indexActual + 1, 0, ny / nz);
 
-				_M[2 * indexActual][_tablaIndicesNumeroDePixel[i][j]] = 1;
-				_M[2 * indexActual][_tablaIndicesNumeroDePixel[i][j + 1]] = -1;
-				_V[2 * indexActual][0] = nx / nz;
-			}
-			else {
-				if (_tablaIndicesNumeroDePixel[i][j - 1] >= 0) {
-					_M[2 * indexActual][_tablaIndicesNumeroDePixel[i][j]] = 1;
-					_M[2 * indexActual][_tablaIndicesNumeroDePixel[i][j - 1]] = -1;
-					_V[2 * indexActual][0] = -nx / nz;
+					indexActual++;
 				}
+				else if (i + 1 < alto && _tablaIndicesNumeroDePixel[i + 1][j] >= 0) {
+					if (j - 1 >= 0 && _tablaIndicesNumeroDePixel[i][j - 1] >= 0) {
+						_M.insertarEnYX(2 * indexActual, _tablaIndicesNumeroDePixel[i][j], 1);
+						_M.insertarEnYX(2 * indexActual, _tablaIndicesNumeroDePixel[i][j - 1], -1);
+						_V.insertarEnYX(2 * indexActual, 0, -nx / nz);
+					}
+					_M.insertarEnYX(2 * indexActual + 1, _tablaIndicesNumeroDePixel[i][j], 1);
+					_M.insertarEnYX(2 * indexActual + 1, _tablaIndicesNumeroDePixel[i + 1][j], -1);
+					_V.insertarEnYX(2 * indexActual + 1, 0, ny / nz);
 
-				if (_tablaIndicesNumeroDePixel[i - 1][j] >= 0) {
-					_M[2 * indexActual + 1][_tablaIndicesNumeroDePixel[i][j]] = 1;
-					_M[2 * indexActual + 1][_tablaIndicesNumeroDePixel[i - 1][j]] = -1;
-					_V[2 * indexActual + 1][0] = -ny / nz;
+					indexActual++;
+				}
+				else if (j + 1 < ancho && _tablaIndicesNumeroDePixel[i][j + 1] >= 0) {
+					if (i - 1 >= 0 && _tablaIndicesNumeroDePixel[i - 1][j] >= 0) {
+						_M.insertarEnYX(2 * indexActual + 1, _tablaIndicesNumeroDePixel[i][j], 1);
+						_M.insertarEnYX(2 * indexActual + 1, _tablaIndicesNumeroDePixel[i - 1][j], -1);
+						_V.insertarEnYX(2 * indexActual + 1, 0, -ny / nz);
+					}
+
+					_M.insertarEnYX(2 * indexActual, _tablaIndicesNumeroDePixel[i][j], 1);
+					_M.insertarEnYX(2 * indexActual, _tablaIndicesNumeroDePixel[i][j + 1], -1);
+					_V.insertarEnYX(2 * indexActual, 0, nx / nz);
+
+					indexActual++;
+				}
+				else {
+					if (j - 1 >= 0 && _tablaIndicesNumeroDePixel[i][j - 1] >= 0) {
+						_M.insertarEnYX(2 * indexActual, _tablaIndicesNumeroDePixel[i][j], 1);
+						_M.insertarEnYX(2 * indexActual, _tablaIndicesNumeroDePixel[i][j - 1], -1);
+						_V.insertarEnYX(2 * indexActual, 0, -nx / nz);
+					}
+
+					if (i - 1 >= 0 && _tablaIndicesNumeroDePixel[i - 1][j] >= 0) {
+						_M.insertarEnYX(2 * indexActual + 1, _tablaIndicesNumeroDePixel[i][j], 1);
+						_M.insertarEnYX(2 * indexActual + 1, _tablaIndicesNumeroDePixel[i - 1][j], -1);
+						_V.insertarEnYX(2 * indexActual + 1, 0, -ny / nz);
+					}
+
+					indexActual++;
 				}
 			}
 		}
@@ -191,12 +201,16 @@ void FotometriaEstereo::obtenerMV(const Matriz<Vector3D> &normales) {
 
 MatrizDouble FotometriaEstereo::obtenerProfundidades(const Matriz<Vector3D> &normales) {
 	obtenerMV(normales);
-	MatrizDouble Mt = _M.transpuesta();
-	MatrizDouble MMt = _M*Mt;
-	MatrizDouble MtV = Mt*_V;
+	//MatrizEsparsa Mt = _M.transpuesta();
+	//MatrizDouble MtM = MatrizDouble(Mt*_M);
+	//MatrizDouble MtV = MatrizDouble(Mt*_V);
+
+	MatrizDouble MtM = MatrizDouble(_M.transpuestaPorOtra(_M));
+	MatrizDouble MtV = MatrizDouble(_M.transpuestaPorOtra(_V));
 	SistemaDeEcuaciones se = SistemaDeEcuaciones();
-	SistemaDeEcuaciones::ResultadosDeEliminacionGausseana<double> res = se.eliminacionGausseana(MMt,MtV);
-	MatrizDouble aux = se.resolverAPartirDePLU(MtV, res.matrizDeParticion, res.L, res.U);
+	MatrizDouble L = se.cholesky(MtM);
+	MatrizDouble aux = se.resolverAPartirDeLLt(MtV, L);
+
 
 	int alto = _mascaraImagenesACalcular.alto();
 	int ancho = _mascaraImagenesACalcular.ancho();
@@ -211,4 +225,27 @@ MatrizDouble FotometriaEstereo::obtenerProfundidades(const Matriz<Vector3D> &nor
 	}
 
 	return z;
+}
+
+vector<FotometriaEstereo::Vertice> FotometriaEstereo::obtenerVertices(const Matriz<Vector3D> &normales, const MatrizDouble &profundidades) const {
+	vector<FotometriaEstereo::Vertice> vertices = vector<FotometriaEstereo::Vertice>();
+	vertices.reserve(_cantidadDePixelsDeImagen);
+
+	int alto = _mascaraImagenesACalcular.alto();
+	int ancho = _mascaraImagenesACalcular.ancho();
+
+	for (int i = 0; i < alto; i++) {
+		for (int j = 0; j < ancho; j++) {
+			if (pixelEstaEnImagen(j, i, _mascaraImagenesACalcular)) {
+				FotometriaEstereo::Vertice vertice = { j, 
+													   i,
+													   profundidades[i][j],
+													   normales[i][j]
+													 };
+				vertices.push_back(vertice);
+			}
+		}
+	}
+
+	return vertices;
 }

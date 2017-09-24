@@ -9,6 +9,8 @@
 
 using namespace std;
 
+void escribirResultados(const vector<FotometriaEstereo::Vertice> &vertices);
+
 int main() {
 	ManejadorImagenes mi = ManejadorImagenes();
 	Imagen circuloMascara = mi.abrirImagenPPM("mate.mask.ppm");
@@ -42,7 +44,20 @@ int main() {
 	imagenesAUsar[2] = 5;
 
 	FotometriaEstereo fe = FotometriaEstereo(circuloMascara, circulos, imagenMascara, imagenes, imagenesAUsar);
-	pair<Matriz<Vector3D>, MatrizDouble> resultado = fe.resolverNormalesYProfundidades();
+	vector<FotometriaEstereo::Vertice> vertices = fe.resolverNormalesYProfundidades();
+
+	escribirResultados(vertices);
 
 	return 0;
+}
+
+void escribirResultados(const vector<FotometriaEstereo::Vertice> &vertices) {
+	int n = vertices.size();
+
+	cout << n << endl;
+
+	for (vector<FotometriaEstereo::Vertice>::const_iterator it = vertices.begin(); it != vertices.end(); it++) {
+		cout << it->x << " " << it->y << " " << it->z << endl;
+		cout << it->normal.x() << " " << it->normal.y() << " " << it->normal.z() << endl;
+	}
 }
