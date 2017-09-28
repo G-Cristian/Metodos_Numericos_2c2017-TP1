@@ -37,6 +37,9 @@ void MatrizEsparsa::insertarEnYX(int y, int x, tipoElementos elemento) {
 			_elementos.insert(pair<tipoClave, tipoElementos>(tipoClave(y, x), elemento));
 		}
 	}
+	else {
+		_elementos.erase(tipoClave(y, x));
+	}
 }
 
 MatrizEsparsa MatrizEsparsa::operator*(const MatrizEsparsa &otra) const {
