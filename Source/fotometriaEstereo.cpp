@@ -201,14 +201,14 @@ void FotometriaEstereo::obtenerMV(const Matriz<Vector3D> &normales) {
 
 MatrizDouble FotometriaEstereo::obtenerProfundidades(const Matriz<Vector3D> &normales) {
 	obtenerMV(normales);
-	//MatrizEsparsa Mt = _M.transpuesta();
-	//MatrizDouble MtM = MatrizDouble(Mt*_M);
-	//MatrizDouble MtV = MatrizDouble(Mt*_V);
+	MatrizEsparsa Mt = _M.transpuesta();
+	MatrizEsparsa MtM = Mt*_M;
+	MatrizDouble MtV = MatrizDouble(Mt*_V);
 
-	MatrizDouble MtM = MatrizDouble(_M.transpuestaPorOtra(_M));
-	MatrizDouble MtV = MatrizDouble(_M.transpuestaPorOtra(_V));
+	//MatrizDouble MtM = MatrizDouble(_M.transpuestaPorOtra(_M));
+	//MatrizDouble MtV = MatrizDouble(_M.transpuestaPorOtra(_V));
 	SistemaDeEcuaciones se = SistemaDeEcuaciones();
-	MatrizDouble L = se.cholesky(MtM);
+	MatrizEsparsa L = se.cholesky(MtM);
 	MatrizDouble aux = se.resolverAPartirDeLLt(MtV, L);
 
 
