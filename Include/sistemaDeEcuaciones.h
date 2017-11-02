@@ -7,6 +7,9 @@
 
 #include <assert.h>
 #include <vector>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -74,7 +77,7 @@ public:
 		Matriz<T> matrizDeParticion = (Matriz<T>)MatrizFactory::matrizDeParticion(vectorDeParticion);
 		matrizFinal = (Matriz<T>)matrizDeParticion*matrizFinal;
 		Matriz<T> U = obtenerUAPartirDeM<T>(matrizFinal);
-		resultadosFinal = (Matriz<T>)(matrizDeParticion)*resultadosFinal;
+		resultadosFinal = (matrizDeParticion.castearAMatriz<T>())*resultadosFinal;
 
 		return	ResultadosDeEliminacionGausseana<T>(matrizFinal, resultadosFinal, L, U, matrizDeParticion);
 	}

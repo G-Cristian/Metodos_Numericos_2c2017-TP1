@@ -8,11 +8,13 @@
 
 #include "vector.h"
 #include "MatrizEsparsa.h"
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 using namespace std;
 
 template <class T> class Matriz;
-class MatrizEsparsa;
 
 template<class T> class SumarMatrizFunctor{
 public:
@@ -95,14 +97,14 @@ public:
 		this->aplicarFuncAElementos(CopiarElementosDeMatrizEsparsaFunctor<T>(m));
 	}
 
-	Matriz(const Vector3D &vector) {
+	Matriz(const Vector3D &v) {
 		_ancho = 1;
 		_alto = 3;
 		_matriz = vector<vector<T> >(_alto, vector<T>(_ancho, T()));
 
-		_matriz[0][0] = (T)vector.x();
-		_matriz[1][0] = (T)vector.y();
-		_matriz[2][0] = (T)vector.z();
+		_matriz[0][0] = (T)v.x();
+		_matriz[1][0] = (T)v.y();
+		_matriz[2][0] = (T)v.z();
 	}
 
 	Matriz(const vector<Vector3D> &filas) {
@@ -129,7 +131,7 @@ public:
 	}
 	*/
 	//operador para castear
-	template<class tipoACastear> operator Matriz<tipoACastear>()const {
+	template<class tipoACastear> Matriz<tipoACastear> castearAMatriz()const {
 		Matriz<tipoACastear> r = Matriz<tipoACastear>(_alto, _ancho, tipoACastear());
 		
 		for(int i = 0; i < _alto; i++){
