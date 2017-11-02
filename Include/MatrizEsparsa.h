@@ -5,6 +5,10 @@
 #include <utility>
 #include "matriz.h"
 
+#include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 using namespace std;
 
 typedef pair<int, int> tipoClave;

@@ -8,6 +8,9 @@
 
 #include "vector.h"
 #include "MatrizEsparsa.h"
+#include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 using namespace std;
 
@@ -95,14 +98,14 @@ public:
 		this->aplicarFuncAElementos(CopiarElementosDeMatrizEsparsaFunctor<T>(m));
 	}
 
-	Matriz(const Vector3D &vector) {
+	Matriz(const Vector3D &v) {
 		_ancho = 1;
 		_alto = 3;
 		_matriz = vector<vector<T> >(_alto, vector<T>(_ancho, T()));
 
-		_matriz[0][0] = (T)vector.x();
-		_matriz[1][0] = (T)vector.y();
-		_matriz[2][0] = (T)vector.z();
+		_matriz[0][0] = (T)v.x();
+		_matriz[1][0] = (T)v.y();
+		_matriz[2][0] = (T)v.z();
 	}
 
 	Matriz(const vector<Vector3D> &filas) {
@@ -129,12 +132,24 @@ public:
 	}
 	*/
 	//operador para castear
-	template<class tipoACastear> operator Matriz<tipoACastear>()const {
-		Matriz<tipoACastear> r = Matriz<tipoACastear>(_alto, _ancho, tipoACastear());
+	operator Matriz<int> () const{
+		Matriz<int> r = Matriz<int>(_alto, _ancho, 0);
 		
 		for(int i = 0; i < _alto; i++){
 			for(int j = 0; j < _ancho; j++){
-				r[i][j] = (tipoACastear)_matriz[i][j];
+				r[i][j] = (int)_matriz[i][j];
+			}
+		}
+		
+		return r;
+	}
+	
+	operator Matriz<double> () const{
+		Matriz<double> r = Matriz<double>(_alto, _ancho, 0.0);
+		
+		for(int i = 0; i < _alto; i++){
+			for(int j = 0; j < _ancho; j++){
+				r[i][j] = (double)_matriz[i][j];
 			}
 		}
 		
