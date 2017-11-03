@@ -3,7 +3,7 @@
 
 #include <map>
 #include <utility>
-#include "matriz.h"
+#include <vector>
 
 #include <math.h>
 #include <stdlib.h>
@@ -19,14 +19,7 @@ template<class T> class Matriz;
 class MatrizEsparsa {
 public:
 	MatrizEsparsa(int alto, int ancho);
-	template<class T> MatrizEsparsa(const Matriz<T> &otra):MatrizEsparsa(alto, ancho) {
-
-		for (int i = 0; i < _alto; i++) {
-			for (int j = 0; j < _ancho; j++) {
-				insertarEnYX(i, j, (tipoElementos)otra[i][j]);
-			}
-		}
-	}
+	template<class T> MatrizEsparsa(const Matriz<T> &otra);
 
 	~MatrizEsparsa();
 

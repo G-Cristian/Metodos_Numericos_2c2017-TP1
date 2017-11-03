@@ -1,4 +1,5 @@
 #include "../Include/MatrizEsparsa.h"
+#include "../Include/matriz.h"
 #include <assert.h>
 
 using  namespace std;
@@ -8,6 +9,17 @@ MatrizEsparsa::MatrizEsparsa(int alto, int ancho) {
 	_ancho = ancho;
 
 	_columnasConElementosEnFilaI = vector<map<int, tipoElementos> >(_alto, map<int, tipoElementos>());
+}
+
+template<class T> MatrizEsparsa::MatrizEsparsa(const Matriz<T> &otra){
+	_ancho = ancho;
+	_alto = alto;
+
+	for (int i = 0; i < _alto; i++) {
+		for (int j = 0; j < _ancho; j++) {
+			insertarEnYX(i, j, (tipoElementos)otra[i][j]);
+		}
+	}
 }
 
 MatrizEsparsa::~MatrizEsparsa() {

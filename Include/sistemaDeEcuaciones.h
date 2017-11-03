@@ -15,7 +15,7 @@ public:
 	template <class T>
 	class ResultadosDeEliminacionGausseana {
 	public:
-		ResultadosDeEliminacionGausseana(const Matriz<T> &matriz, const Matriz<T> &resultados, const Matriz<T> &L, const Matriz<T> &U, const MatrizInt &particion)
+		ResultadosDeEliminacionGausseana(const Matriz<T> &matriz, const Matriz<T> &resultados, const Matriz<T> &L, const Matriz<T> &U, const Matriz<T> &particion)
 			:matrizLuegoDeEliminacionGausseana(matriz), resultadosLuegoDeEliminacionGausseana(resultados),L(L),U(U), matrizDeParticion(particion)
 		{
 
@@ -71,7 +71,7 @@ public:
 			}
 		}
 		
-		Matriz<T> matrizDeParticion = (Matriz<T>)MatrizFactory::matrizDeParticion(vectorDeParticion);
+		Matriz<T> matrizDeParticion = MatrizFactory::matrizDeParticion(vectorDeParticion).operator Matriz<T>();
 		matrizFinal = (Matriz<T>)matrizDeParticion*matrizFinal;
 		Matriz<T> U = obtenerUAPartirDeM<T>(matrizFinal);
 		resultadosFinal = (Matriz<T>)(matrizDeParticion)*resultadosFinal;

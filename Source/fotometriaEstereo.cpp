@@ -237,8 +237,8 @@ vector<FotometriaEstereo::Vertice> FotometriaEstereo::obtenerVertices(const Matr
 	for (int i = 0; i < alto; i++) {
 		for (int j = 0; j < ancho; j++) {
 			if (pixelEstaEnImagen(j, i, _mascaraImagenesACalcular)) {
-				FotometriaEstereo::Vertice vertice = { j, 
-													   i,
+				FotometriaEstereo::Vertice vertice = { (double)j, 
+													   (double)i,
 													   profundidades[i][j],
 													   normales[i][j]
 													 };

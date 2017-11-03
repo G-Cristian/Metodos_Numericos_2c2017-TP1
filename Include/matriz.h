@@ -15,7 +15,7 @@
 using namespace std;
 
 template <class T> class Matriz;
-class MatrizEsparsa;
+//class MatrizEsparsa;
 
 template<class T> class SumarMatrizFunctor{
 public:
@@ -132,24 +132,13 @@ public:
 	}
 	*/
 	//operador para castear
-	operator Matriz<int> () const{
-		Matriz<int> r = Matriz<int>(_alto, _ancho, 0);
+	template<class tipoACastear>
+	operator Matriz<tipoACastear> () const{
+		Matriz<tipoACastear> r = Matriz<tipoACastear>(_alto, _ancho, tipoACastear());
 		
 		for(int i = 0; i < _alto; i++){
 			for(int j = 0; j < _ancho; j++){
-				r[i][j] = (int)_matriz[i][j];
-			}
-		}
-		
-		return r;
-	}
-	
-	operator Matriz<double> () const{
-		Matriz<double> r = Matriz<double>(_alto, _ancho, 0.0);
-		
-		for(int i = 0; i < _alto; i++){
-			for(int j = 0; j < _ancho; j++){
-				r[i][j] = (double)_matriz[i][j];
+				r[i][j] = (tipoACastear)_matriz[i][j];
 			}
 		}
 		
