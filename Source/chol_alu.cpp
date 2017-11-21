@@ -3,6 +3,7 @@
 
 /// Ejercicios
 
+
 /// 1) esSimetrica
 // Completar la función esSimetrica.
 // Recibe una matriz A y devuelve un booleano. 
