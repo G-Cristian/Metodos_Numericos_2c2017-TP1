@@ -9,12 +9,13 @@
 #include "vector.h"
 #include "MatrizEsparsa.h"
 #include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 using namespace std;
 
 template <class T> class Matriz;
+//class MatrizEsparsa;
 
 template<class T> class SumarMatrizFunctor{
 public:
@@ -131,7 +132,8 @@ public:
 	}
 	*/
 	//operador para castear
-	template<class tipoACastear> Matriz<tipoACastear> castearAMatriz()const {
+	template<class tipoACastear>
+	operator Matriz<tipoACastear> () const{
 		Matriz<tipoACastear> r = Matriz<tipoACastear>(_alto, _ancho, tipoACastear());
 		
 		for(int i = 0; i < _alto; i++){

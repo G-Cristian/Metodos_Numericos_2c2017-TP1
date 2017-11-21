@@ -18,7 +18,7 @@ public:
 	template <class T>
 	class ResultadosDeEliminacionGausseana {
 	public:
-		ResultadosDeEliminacionGausseana(const Matriz<T> &matriz, const Matriz<T> &resultados, const Matriz<T> &L, const Matriz<T> &U, const MatrizInt &particion)
+		ResultadosDeEliminacionGausseana(const Matriz<T> &matriz, const Matriz<T> &resultados, const Matriz<T> &L, const Matriz<T> &U, const Matriz<T> &particion)
 			:matrizLuegoDeEliminacionGausseana(matriz), resultadosLuegoDeEliminacionGausseana(resultados),L(L),U(U), matrizDeParticion(particion)
 		{
 
@@ -74,7 +74,7 @@ public:
 			}
 		}
 		
-		Matriz<T> matrizDeParticion = (Matriz<T>)MatrizFactory::matrizDeParticion(vectorDeParticion);
+		Matriz<T> matrizDeParticion = MatrizFactory::matrizDeParticion(vectorDeParticion).operator Matriz<T>();
 		matrizFinal = (Matriz<T>)matrizDeParticion*matrizFinal;
 		Matriz<T> U = obtenerUAPartirDeM<T>(matrizFinal);
 		resultadosFinal = (matrizDeParticion.castearAMatriz<T>())*resultadosFinal;
@@ -117,6 +117,23 @@ public:
 
 	//TODO: Como es si la matriz no es cuadrada
 	//TODO: Esta bien que alto sea mayor o igual a ancho
+	//M debe ser triangularSuperior
+	template<class T> Matriz<T> resolverAPartirDeTriangularSuperior(const MatrizEsparsa &m, const Matriz<T> &b) const {
+		assert(b.ancho() == 1 && m.alto() == b.alto() && m.alto() >= m.ancho());
+		int alto = m.alto();
+		int ancho = m.ancho();
+		Matriz<T> r = Matriz<T>(ancho, 1, T());
+
+		for (int i = ancho - 1; i >= 0; i--) {
+			//TODO: Que se hace si m[i][i] = 0
+			r[i][0] = resolverIncognitaIUsandoSiguientesDeResueltas<T>(i, m.filaI(i), r, b[i][0]);
+		}
+
+		return r;
+	}
+
+	//TODO: Como es si la matriz no es cuadrada
+	//TODO: Esta bien que alto sea mayor o igual a ancho
 	//M debe ser triangularInferior
 	template<class T> Matriz<T> resolverAPartirDeTriangularInferior(const Matriz<T> &m, const Matriz<T> &b) const {
 		assert(b.ancho() == 1 && m.alto() == b.alto() && m.alto() >= m.ancho());
@@ -132,6 +149,23 @@ public:
 		return r;
 	}
 
+	//TODO: Como es si la matriz no es cuadrada
+	//TODO: Esta bien que alto sea mayor o igual a ancho
+	//M debe ser triangularInferior
+	template<class T> Matriz<T> resolverAPartirDeTriangularInferior(const MatrizEsparsa &m, const Matriz<T> &b) const {
+		assert(b.ancho() == 1 && m.alto() == b.alto() && m.alto() >= m.ancho());
+		int alto = m.alto();
+		int ancho = m.ancho();
+		Matriz<T> r = Matriz<T>(ancho, 1, T());
+
+		for (int i = 0; i < ancho; i++) {
+			//TODO: Que se hace si m[i][i] = 0
+			r[i][0] = resolverIncognitaIUsandoAnterioresDeResueltas<T>(i, m.filaI(i), r, b[i][0]);
+		}
+
+		return r;
+	}
+
 	//TODO: quizas sacar
 	//'matriz' debe ser Simetrica Definida Positiva.
 	MatrizEsparsa cholesky(const MatrizEsparsa &matriz) {
@@ -142,9 +176,9 @@ public:
 		MatrizEsparsa L = MatrizEsparsa(alto, ancho);
 		double l_00 = sqrt(matriz.enYX(0, 0));
 		L.insertarEnYX(0, 0, l_00);
-
-		for (int i = 1; i < alto; i++)
-			L.insertarEnYX(i, 0, matriz.enYX(0, i) / l_00);
+		const map<int, double> *filaDeMatriz = &matriz.filaI(0);
+		for (map<int, double>::const_iterator it = filaDeMatriz->begin(); it != filaDeMatriz->end(); it++)
+			L.insertarEnYX(it->first, 0, it->second / l_00);
 
 		for (int j = 1; j < ancho - 1; j++) {
 			double l_jj = sqrt(matriz.enYX(j, j) - sumatoriaDePrimerosKElementosDeFilaIAlCuadrado(L, j, j));
@@ -152,8 +186,9 @@ public:
 
 			for (int i = j + 1; i < alto; i++) {
 				double sumatoria = 0.0;
-				for (int k = 0; k < i; k++) {
-					sumatoria += L.enYX(i, k) * L.enYX(j, k);
+				filaDeMatriz = &L.filaI(i);
+				for (map<int, double>::const_iterator it = filaDeMatriz->begin(); it != filaDeMatriz->end() && it->first < i; it++) {
+					sumatoria += it->second * L.enYX(j, it->first);
 				}
 				double l_ij = (matriz.enYX(j, i) - sumatoria) / l_jj;
 				L.insertarEnYX(i, j, l_ij);
@@ -168,8 +203,9 @@ public:
 	double sumatoriaDePrimerosKElementosDeFilaIAlCuadrado(const MatrizEsparsa &L, const int k, const int i) {
 		double sumatoria = 0;
 		double aux = 0.0;
-		for (int j = 0; j < k; j++) {
-			aux = L.enYX(i, j);
+		const map<int, double> &columnas = L.filaI(i);
+		for (map<int,double>::const_iterator it = columnas.begin(); it != columnas.end() && it->first < k; it++) {
+			aux = it->second;
 			sumatoria += aux*aux;
 		}
 
@@ -222,6 +258,20 @@ public:
 	//LLtx = b
 	//L triangular inferior con diagonal positiva.
 	template<class T> Matriz<T> resolverAPartirDeLLt(const Matriz<T> &b, const Matriz<T> &L) const {
+		//A = LLt
+		//Ax = b
+		//LLtx = b
+		//Ltx = y
+		//Ly = b
+
+		Matriz<T> y = resolverAPartirDeTriangularInferior(L, b);
+
+		return resolverAPartirDeTriangularSuperior(L.transpuesta(), y);
+	}
+
+	//LLtx = b
+	//L triangular inferior con diagonal positiva.
+	template<class T> Matriz<T> resolverAPartirDeLLt(const Matriz<T> &b, const MatrizEsparsa &L) const {
 		//A = LLt
 		//Ax = b
 		//LLtx = b
@@ -301,6 +351,18 @@ private:
 
 	//TODO: Que se hace si fila[i] = 0
 	template <class T>
+	T resolverIncognitaIUsandoSiguientesDeResueltas(int i, const map<int, double> &fila, const Matriz<T> &resueltas, const T &b) const {
+		T sumatoria = b;
+
+		for (map<int, double>::const_iterator it = fila.find(i+1); it != fila.end(); it++) {
+			sumatoria -= resueltas[it->first][0] * it->second;
+		}
+
+		return sumatoria / (double)fila.find(i)->second;
+	}
+
+	//TODO: Que se hace si fila[i] = 0
+	template <class T>
 	T resolverIncognitaIUsandoAnterioresDeResueltas(int i, const vector<T> &fila, const Matriz<T> &resueltas, const T &b) const {
 		int n = fila.size();
 		T sumatoria = b;
@@ -309,6 +371,17 @@ private:
 		}
 
 		return sumatoria / (double)fila[i];
+	}
+
+	//TODO: Que se hace si fila[i] = 0
+	template <class T>
+	T resolverIncognitaIUsandoAnterioresDeResueltas(int i, const map<int,double> &fila, const Matriz<T> &resueltas, const T &b) const {
+		T sumatoria = b;
+		for (map<int, double>::const_iterator it = fila.begin(); it != fila.end() && it->first < i; it++) {
+			sumatoria -= resueltas[it->first][0] * it->second;
+		}
+
+		return sumatoria / (double)fila.find(i)->second;
 	}
 };
 

@@ -1,4 +1,5 @@
 #include "../Include/MatrizEsparsa.h"
+#include "../Include/matriz.h"
 #include <assert.h>
 
 using  namespace std;
@@ -6,6 +7,19 @@ using  namespace std;
 MatrizEsparsa::MatrizEsparsa(int alto, int ancho) {
 	_alto = alto;
 	_ancho = ancho;
+
+	_columnasConElementosEnFilaI = vector<map<int, tipoElementos> >(_alto, map<int, tipoElementos>());
+}
+
+template<class T> MatrizEsparsa::MatrizEsparsa(const Matriz<T> &otra){
+	_ancho = ancho;
+	_alto = alto;
+
+	for (int i = 0; i < _alto; i++) {
+		for (int j = 0; j < _ancho; j++) {
+			insertarEnYX(i, j, (tipoElementos)otra[i][j]);
+		}
+	}
 }
 
 MatrizEsparsa::~MatrizEsparsa() {
@@ -15,9 +29,11 @@ MatrizEsparsa::~MatrizEsparsa() {
 tipoElementos MatrizEsparsa::enYX(int y, int x) const {
 	assert(0 <= x && x < _ancho && 0 <= y && y < _alto);
 
-	map<tipoClave, tipoElementos>::const_iterator it = _elementos.find(tipoClave(y, x));
+	const map<int, tipoElementos> &columnasDeFila = _columnasConElementosEnFilaI[y];
 
-	if (it != _elementos.end()) {
+	map<int, tipoElementos>::const_iterator it = columnasDeFila.find(x);
+
+	if (it != columnasDeFila.end()) {
 		return it->second;
 	}
 	else {
@@ -27,18 +43,20 @@ tipoElementos MatrizEsparsa::enYX(int y, int x) const {
 void MatrizEsparsa::insertarEnYX(int y, int x, tipoElementos elemento) {
 	assert(0 <= x && x < _ancho && 0 <= y && y < _alto);
 
+	map<int, tipoElementos> &columnasDeFila = _columnasConElementosEnFilaI[y];
 	if (elemento != 0) {
-		map<tipoClave, tipoElementos>::const_iterator it = _elementos.find(tipoClave(y, x));
+		map<int, tipoElementos>::const_iterator it = columnasDeFila.find(x);
 
-		if (it != _elementos.end()) {
-			_elementos.at(tipoClave(y, x)) = elemento;
+		if (it != columnasDeFila.end()) {
+			columnasDeFila.at(x) = elemento;
 		}
 		else {
-			_elementos.insert(pair<tipoClave, tipoElementos>(tipoClave(y, x), elemento));
+			columnasDeFila.insert(pair<int, tipoElementos>(x, elemento));
 		}
 	}
-	else {
-		_elementos.erase(tipoClave(y, x));
+	else
+	{
+		columnasDeFila.erase(x);
 	}
 }
 
@@ -47,15 +65,17 @@ MatrizEsparsa MatrizEsparsa::operator*(const MatrizEsparsa &otra) const {
 
 	MatrizEsparsa mat = MatrizEsparsa(_alto, otra._ancho);
 	tipoElementos aux = 0;
-	for (int y = 0; y < mat._alto; y++) {
-		for (int x = 0; x < mat._ancho; x++) {
-			aux = 0;
-			for (int k = 0; k < _ancho; k++) {
-				aux += enYX(y, k) * otra.enYX(k, x);
-			}
 
-			if (aux != 0) {
-				mat.insertarEnYX(y, x, aux);
+	const map<int, tipoElementos> *columnasDeFilaDeM1;
+	const map<int, tipoElementos> *columnasDeFilaDeM2;
+	for (int i = 0; i < _alto; i++) {
+		columnasDeFilaDeM1 = &(_columnasConElementosEnFilaI[i]);
+		for (map<int, tipoElementos>::const_iterator colDeM1 = columnasDeFilaDeM1->begin(); colDeM1 != columnasDeFilaDeM1->end(); colDeM1++) {
+			columnasDeFilaDeM2 = &(otra._columnasConElementosEnFilaI[colDeM1->first]);
+			for (map<int, tipoElementos>::const_iterator colDeM2 = columnasDeFilaDeM2->begin(); colDeM2 != columnasDeFilaDeM2->end(); colDeM2++) {
+				aux = colDeM1->second * colDeM2->second;
+
+				mat.insertarEnYX(i, colDeM2->first, aux + mat.enYX(i, colDeM2->first));
 			}
 		}
 	}
@@ -65,21 +85,24 @@ MatrizEsparsa MatrizEsparsa::operator*(const MatrizEsparsa &otra) const {
 
 MatrizEsparsa MatrizEsparsa::transpuesta() const {
 	MatrizEsparsa mat = MatrizEsparsa(_ancho, _alto);
-
-	for (map<tipoClave, tipoElementos>::const_iterator it = _elementos.begin(); it != _elementos.end(); it++) {
-		//inserto valor a_(y, x) en mat_(x, y)
-		//donce y = it->first.first, x = it->first.second
-		mat.insertarEnYX(it->first.second, it->first.first, it->second);
+	const map<int, tipoElementos> *columnasDeFila;
+	for (int i = 0; i < _alto; i++) {
+		columnasDeFila = &(_columnasConElementosEnFilaI[i]);
+		for (map<int, tipoElementos>::const_iterator it = columnasDeFila->begin(); it != columnasDeFila->end(); it++) {
+			//inserto valor a_(y, x) en mat_(x, y)
+			mat.insertarEnYX(it->first, i, it->second);
+		}
 	}
 
 	return mat;
 }
-
+/*
 MatrizEsparsa MatrizEsparsa::transpuestaPorOtra(const MatrizEsparsa &otra) const {
 	assert(_alto == otra._alto);
 
 	MatrizEsparsa mat = MatrizEsparsa(_ancho, otra._ancho);
 	tipoElementos aux = 0;
+
 	for (map<tipoClave, tipoElementos>::const_iterator it = _elementos.begin(); it != _elementos.end(); it++) {
 		//aux = _elemento[y][k]t * otra[k][x] = _elemento[k][y]*otra[k][x]
 		//y = it->first.first, pero como es transpuesta y = it->first.second
@@ -103,3 +126,4 @@ MatrizEsparsa MatrizEsparsa::transpuestaPorOtra(const MatrizEsparsa &otra) const
 
 	return mat;
 }
+*/

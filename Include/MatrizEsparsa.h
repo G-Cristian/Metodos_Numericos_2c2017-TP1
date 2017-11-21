@@ -3,7 +3,11 @@
 
 #include <map>
 #include <utility>
-#include "matriz.h"
+#include <vector>
+
+#include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 using namespace std;
 
@@ -15,16 +19,7 @@ template<class T> class Matriz;
 class MatrizEsparsa {
 public:
 	MatrizEsparsa(int alto, int ancho);
-	template<class T> MatrizEsparsa(const Matriz<T> &otra) {
-		_alto = otra.alto();
-		_ancho = otra.ancho();
-
-		for (int i = 0; i < _alto; i++) {
-			for (int j = 0; j < _ancho; j++) {
-				insertarEnYX(i, j, (tipoElementos)otra[i][j]);
-			}
-		}
-	}
+	template<class T> MatrizEsparsa(const Matriz<T> &otra);
 
 	~MatrizEsparsa();
 
@@ -36,8 +31,9 @@ public:
 	MatrizEsparsa operator*(const MatrizEsparsa &otra) const;
 	MatrizEsparsa transpuesta() const;
 	MatrizEsparsa transpuestaPorOtra(const MatrizEsparsa &otra) const;
+	inline const map<int, tipoElementos>& filaI(int i) const { return _columnasConElementosEnFilaI[i]; }
 private:
-	map<tipoClave, tipoElementos> _elementos;
+	vector<map<int, tipoElementos> > _columnasConElementosEnFilaI;
 	int _alto;
 	int _ancho;
 };
