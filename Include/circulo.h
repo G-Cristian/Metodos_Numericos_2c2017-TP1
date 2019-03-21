@@ -7,7 +7,7 @@ class Circulo {
 public:
 	Circulo(double x, double y, double radio);
 
-	Vector3D normalEnPuntoXY(double x, double y) const;
+	MN::Vector3D normalEnPuntoXY(double x, double y) const;
 private:
 	double _x;
 	double _y;

@@ -14,12 +14,12 @@
 
 using namespace std;
 
-template <class T> class Matriz;
+template <class T> class Matrix;
 //class MatrizEsparsa;
 
 template<class T> class SumarMatrizFunctor{
 public:
-	SumarMatrizFunctor(const Matriz<T> &sumando):_sumando(sumando){
+	SumarMatrizFunctor(const Matrix<T> &sumando):_sumando(sumando){
 		
 	}
 	
@@ -27,7 +27,7 @@ public:
 		return elemento + _sumando[fila][columna];
 	}
 private:
-	Matriz<T> _sumando;
+	Matrix<T> _sumando;
 };
 
 template<class tipoMatriz, class tipoEscalar> class MultiplicarPorEscalarMatrizFunctor{
@@ -68,16 +68,16 @@ private:
 	MatrizEsparsa _otra;
 };
 
-template <class T> class Matriz{
+template <class T> class Matrix{
 public:
-	Matriz(int alto, int ancho, T valorInicial){
+	Matrix(int alto, int ancho, T valorInicial){
 		_ancho = ancho;
 		_alto = alto;
 	
 		_matriz = vector<vector<T> >(alto, vector<T>(ancho,valorInicial));
 	}
 
-	Matriz(int alto, int ancho, const T *m) {
+	Matrix(int alto, int ancho, const T *m) {
 		_alto = alto;
 		_ancho = ancho;
 		_matriz = vector<vector<T> >(alto, vector<T>(ancho, T()));
@@ -89,7 +89,7 @@ public:
 		}
 	}
 
-	Matriz(const MatrizEsparsa &m) {
+	Matrix(const MatrizEsparsa &m) {
 		_ancho = m.ancho();
 		_alto = m.alto();
 
@@ -98,7 +98,7 @@ public:
 		this->aplicarFuncAElementos(CopiarElementosDeMatrizEsparsaFunctor<T>(m));
 	}
 
-	Matriz(const Vector3D &v) {
+	Matrix(const Vector3D &v) {
 		_ancho = 1;
 		_alto = 3;
 		_matriz = vector<vector<T> >(_alto, vector<T>(_ancho, T()));
@@ -108,7 +108,7 @@ public:
 		_matriz[2][0] = (T)v.z();
 	}
 
-	Matriz(const vector<Vector3D> &filas) {
+	Matrix(const vector<Vector3D> &filas) {
 		_ancho = 3;
 		_alto = filas.size();
 		_matriz = vector<vector<T> >(_alto, vector<T>(_ancho, T()));
@@ -120,10 +120,10 @@ public:
 		}
 	}
 	
-	~Matriz(){
+	~Matrix(){
 	}
 	/*
-	Matriz<T> & operator=(const Matriz<T> &otra) {
+	Matrix<T> & operator=(const Matrix<T> &otra) {
 		_alto = otra._alto;
 		_ancho = otra._ancho;
 		_matriz = otra._matriz;
@@ -133,8 +133,8 @@ public:
 	*/
 	//operador para castear
 	template<class tipoACastear>
-	operator Matriz<tipoACastear> () const{
-		Matriz<tipoACastear> r = Matriz<tipoACastear>(_alto, _ancho, tipoACastear());
+	operator Matrix<tipoACastear> () const{
+		Matrix<tipoACastear> r = Matrix<tipoACastear>(_alto, _ancho, tipoACastear());
 		
 		for(int i = 0; i < _alto; i++){
 			for(int j = 0; j < _ancho; j++){
@@ -199,28 +199,28 @@ public:
 	}
 	
 	//Deben tener el mismo tamaño.
-	Matriz<T> operator+(const Matriz<T> &otra) const {
+	Matrix<T> operator+(const Matrix<T> &otra) const {
 		//if(_alto != otra._alto || _ancho != otra._ancho)
 		//	throw "Deben tener las mismas dimensiones.";
 		assert(_alto == otra._alto && _ancho == otra._ancho);
 		return crearMatrizAPartirDeOtraAplicandoFuncAElementos(*this, SumarMatrizFunctor<T>(otra));
 	}
 
-	Matriz<T> operator-()const {
+	Matrix<T> operator-()const {
 		return *this * (-1);
 	}
 	
-	Matriz<T> operator-(const Matriz<T> &otra)const {
+	Matrix<T> operator-(const Matrix<T> &otra)const {
 		return *this + (-otra);
 	}
 	
-	Matriz<T> operator*(const Matriz<T> &otra) const {
+	Matrix<T> operator*(const Matrix<T> &otra) const {
 		assert(_ancho == otra._alto);
 		int m = _alto;
 		int n = _ancho;
 		int s = otra._ancho;
 
-		Matriz<T> r = Matriz<T>(m, s, T());
+		Matrix<T> r = Matrix<T>(m, s, T());
 		T sum = 0;
 		for (int f = 0; f < m; f++) {
 			for (int c = 0; c < s; c++) {
@@ -237,16 +237,16 @@ public:
 	}
 
 	template <class U>
-	Matriz<T> operator*(U escalar) const {
+	Matrix<T> operator*(U escalar) const {
 		return crearMatrizAPartirDeOtraAplicandoFuncAElementos(*this, MultiplicarPorEscalarMatrizFunctor<T, U>(escalar));
 	}
 
 	/*
-	Matriz<T> operator/(int escalar) const {
+	Matrix<T> operator/(int escalar) const {
 		return *this * (1.0/(double)escalar);
 	}
 	
-	Matriz<T> operator/(double escalar) const {
+	Matrix<T> operator/(double escalar) const {
 		return *this * (1.0/escalar);
 	}
 	*/
@@ -279,13 +279,13 @@ public:
 	}
 
 	//Satura los valores entre 0 y 255
-	Matriz<T> saturar() const {
+	Matrix<T> saturar() const {
 		return crearMatrizAPartirDeOtraAplicandoFuncAElementos(*this, SaturarMatrizAMatrizCharFunctor<T>());
 	}
 	
-	Matriz<T> filaComoMatriz(int fila) const {
+	Matrix<T> filaComoMatriz(int fila) const {
 		assert(indiceEnRangoAlto(fila));
-		Matriz<T> r = Matriz<T>(1, _ancho, T());
+		Matrix<T> r = Matrix<T>(1, _ancho, T());
 		for (int i = 0; i < _ancho; i++) {
 			r[0][i] = _matriz[fila][i];
 		}
@@ -293,13 +293,13 @@ public:
 		return r;
 	}
 
-	Matriz<T> & agreagrleAFilaIOtraFila(int filaI, const Matriz<T> &otraFila) {
+	Matrix<T> & agreagrleAFilaIOtraFila(int filaI, const Matrix<T> &otraFila) {
 		assert(_ancho == otraFila._ancho && otraFila._alto == 1);
 
 		return agreagrleAFilaIOtraFila(filaI, otraFila[0]);
 	}
 
-	Matriz<T> & agreagrleAFilaIOtraFila(int filaI, const vector<T> &otraFila) {
+	Matrix<T> & agreagrleAFilaIOtraFila(int filaI, const vector<T> &otraFila) {
 		assert(_ancho == otraFila.size());
 		
 		for (int c = 0; c < _ancho; c++) {
@@ -309,10 +309,10 @@ public:
 		return *this;
 	}
 
-	Matriz<T> submatriz(int filaSup, int colIzq, int filaInf, int colDer) const {
+	Matrix<T> submatriz(int filaSup, int colIzq, int filaInf, int colDer) const {
 		assert(indiceEnRangoAlto(filaSup) && indiceEnRangoAlto(filaInf) && indiceEnRangoAncho(colIzq) && indiceEnRangoAncho(colDer) &&
 			filaSup <= filaInf && colIzq <= colDer);
-		Matriz<T> r = Matriz<T>(filaInf - filaSup + 1, colDer - colIzq + 1, T());
+		Matrix<T> r = Matrix<T>(filaInf - filaSup + 1, colDer - colIzq + 1, T());
 
 		for (int i = 0; i < r._alto; i++) {
 			for (int j = 0; j < r._ancho; j++) {
@@ -323,8 +323,8 @@ public:
 		return r;
 	}
 
-	Matriz<T> transpuesta() const {
-		Matriz<T> t = Matriz<T>(_ancho, _alto, T());
+	Matrix<T> transpuesta() const {
+		Matrix<T> t = Matrix<T>(_ancho, _alto, T());
 
 		for (int i = 0; i < _alto; i++) {
 			for (int j = 0; j < _ancho; j++) {
@@ -335,9 +335,9 @@ public:
 		return t;
 	}
 
-	//Modifica la matriz original.
-	//Func es de tipo T fun(int fila, int columna, T elementoActual) donde fila, columna es la posicion de la matriz que se recorre y elementoActual es el elemento actual de la matriz que se recorre.
-	template<class Func> Matriz<T>& aplicarFuncAElementos(Func func) {
+	//Modifica la Matrix original.
+	//Func es de tipo T fun(int fila, int columna, T elementoActual) donde fila, columna es la posicion de la Matrix que se recorre y elementoActual es el elemento actual de la Matrix que se recorre.
+	template<class Func> Matrix<T>& aplicarFuncAElementos(Func func) {
 		for(int i = 0; i < _alto; i++){
 			for(int j = 0; j < _ancho; j++){
 				_matriz[i][j] = func(i,j,_matriz[i][j]);
@@ -361,24 +361,24 @@ private:
 	int _alto;
 };
 
-template<class T> Matriz<T> operator*(int escalar, const Matriz<T> &otra) {
+template<class T> Matrix<T> operator*(int escalar, const Matrix<T> &otra) {
 	return otra * escalar;
 }
 
-template<class T> Matriz<T> operator*(double escalar, const Matriz<T> &otra) {
+template<class T> Matrix<T> operator*(double escalar, const Matrix<T> &otra) {
 	return otra * escalar;
 }
 
-template<class T, class Func> Matriz<T> crearMatrizAPartirDeOtraAplicandoFuncAElementos(const Matriz<T> &otra, Func func) {
-	Matriz<T> r = otra;
+template<class T, class Func> Matrix<T> crearMatrizAPartirDeOtraAplicandoFuncAElementos(const Matrix<T> &otra, Func func) {
+	Matrix<T> r = otra;
 	r.aplicarFuncAElementos(func);
 	
 	return r;
 }
 
-typedef Matriz<char> MatrizChar;
-typedef Matriz<unsigned char> MatrizUChar;
-typedef Matriz<int> MatrizInt;
-typedef Matriz<double> MatrizDouble;
+//typedef Matrix<char> MatrizChar;
+//typedef Matrix<unsigned char> MatrizUChar;
+//typedef Matrix<int> MatrixInt;
+//typedef Matrix<double> MatrixDoule;
 
 #endif

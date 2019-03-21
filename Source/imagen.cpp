@@ -1,19 +1,54 @@
+#include "../Include/AbstractMatrix.h"
 #include "../Include/imagen.h"
+#include "../Include/Matrix.h"
 #include "../Include/rectangulo.h"
+#include "../Include/VectorVecrorImp.h"
 #include <algorithm>
+#include <iostream>
 
 using namespace std;
 
-Imagen::Imagen(const MatrizUChar &datos, int canales):_datos(datos) {
+Imagen::Imagen(const MN::AbstractMatrix<unsigned char> &datos, int canales):_datos(datos) {
 	_canales = canales;
 }
 //alto y ancho representan las dimenciones en *datos (es decir el ancho de la imagen va a ser ancho / canales).
-Imagen::Imagen(int alto, int ancho, const unsigned char *datos, int canales) : _datos(MatrizUChar(alto, ancho*canales, datos)) {
+Imagen::Imagen(size_t alto, size_t ancho, const unsigned char *datos, size_t canales) : _datos(std::move(MN::Matrix<unsigned char>(alto, ancho*canales, datos))) {
 	_canales = canales;
+}
+
+Imagen::Imagen(const Imagen &other):
+	_datos(other._datos)
+	,_canales(other._canales){
+	cout << "Imagen copy constructor" << endl;
+}
+
+Imagen::Imagen(Imagen &&other) noexcept:
+	_datos(std::move(other._datos))
+	,_canales(other._canales)
+{
+	cout << "Imagen move constructor" << endl;
 }
 
 Imagen::~Imagen() {
 
+}
+
+Imagen& Imagen::operator=(const Imagen &other) {
+	cout << "Imagen copy assigment" << endl;
+	if (&other != this) {
+		_datos = other._datos;
+		_canales = other._canales;
+	}
+	return *this;
+}
+
+Imagen& Imagen::operator=(Imagen &&other) noexcept {
+	cout << "Imagen move assigment" << endl;
+	if (&other != this) {
+		_datos = std::move(other._datos);
+		_canales = other._canales;
+	}
+	return *this;
 }
 
 //Si se le pasa una mascara descarta lo negro que bordea la imagen.
@@ -23,16 +58,16 @@ Imagen Imagen::subImagenReal() const {
 }
 
 Imagen Imagen::subImagen(const Rectangulo &regionDeSubImagen) const {
-	MatrizUChar m = _datos.submatriz(regionDeSubImagen.arriba(), regionDeSubImagen.izquierda() * _canales,
-									 regionDeSubImagen.abajo(), regionDeSubImagen.derecha() * _canales + _canales - 1);
+	std::unique_ptr<MN::AbstractMatrix<unsigned char> >m = _datos.submatrix(regionDeSubImagen.arriba(), regionDeSubImagen.izquierda() * _canales,
+		regionDeSubImagen.abajo(), regionDeSubImagen.derecha() * _canales + _canales - 1);
 
-	return Imagen(m, _canales);
+	return Imagen(*m, _canales);
 }
 
 //Si se le pasa una mascara descarta lo negro que bordea la imagen.
 Rectangulo Imagen::subRectanguloConImagenReal() const {
-	int ancho = _datos.ancho();
-	int alto = _datos.alto();
+	int ancho = _datos.width();
+	int alto = _datos.height();
 	int minX = ancho + 1;
 	int maxX = -1;
 	int minY = alto + 1;
@@ -40,7 +75,7 @@ Rectangulo Imagen::subRectanguloConImagenReal() const {
 
 	for (int i = 0; i < alto; i++) {
 		for (int j = 0; j < ancho; j += _canales) {
-			if (!_datos.rangoDeTresElementosEnYX(i, j).esCero()) {
+			if (!_datos.rangeOfThreeElementsAtYX(i, j).isZero()) {
 				minX = min(j, minX);
 				maxX = max(j, maxX);
 				minY = min(i, minY);
@@ -53,7 +88,7 @@ Rectangulo Imagen::subRectanguloConImagenReal() const {
 }
 
 double Imagen::brilloDelPixel(int x, int y) const {
-	return pixelEnXY(x, y).sumaDeElementos();
+	return pixelEnXY(x, y).sumOfElements();
 }
 
 double Imagen::brilloDeRegion(const Rectangulo &region) const {
@@ -125,10 +160,10 @@ Rectangulo Imagen::regionMasBrillanteDentroDeRegion(int offset, const Rectangulo
 	return Rectangulo(maxXCenter - offset, maxYCenter - offset, maxXCenter + offset, maxYCenter + offset);
 }
 
-void Imagen::pintarPixel(int x, int y, int r, int g, int b) {
-	Vector3D color = Vector3D(b, g, r);
+void Imagen::pintarPixel(int x, int y, unsigned char r, unsigned char g, unsigned char b) {
+	MN::Vector<unsigned char> color(new MN::VectorVectorImp<unsigned char>(3), { b, g, r });
 
-	_datos.escribirTresElementosEnYX(y, x * _canales, color);
+	_datos.writeThreeElementsInRowColumn(y, x * _canales, color);
 }
 
 void Imagen::pintarBordeDeRegion(const Rectangulo &region, int r, int g, int b) {

@@ -1,7 +1,10 @@
 #define _CRT_SECURE_NO_WARNINGS
-#include <iostream>
+
 #include "../Include/manejadorImagenes.h"
 #include "../Include/ppmloader.h"
+
+#include <iostream>
+#include <memory>
 
 using namespace std;
 
@@ -36,10 +39,9 @@ void ManejadorImagenes::guardarImagenPPM(const Imagen &imagen, string nombreArch
 	sprintf(comments, "%s", "Hello world");
 
 	int width = imagen.ancho(), height = imagen.alto();
-	uchar* data = imagen.datos().comoPuntero();
+	unique_ptr<uchar> data = imagen.datos().convertToPointer();
 
-	bool ret = SavePPMFile(nombreArchivo.c_str(), data, width, height, PPM_LOADER_PIXEL_TYPE_RGB_8B, comments);
-	delete[] data;
+	bool ret = SavePPMFile(nombreArchivo.c_str(), data.get(), width, height, PPM_LOADER_PIXEL_TYPE_RGB_8B, comments);
 	if (!ret)
 	{
 		std::cout << "ERROR: couldn't save Image to ppm file" << std::endl;

@@ -1,26 +1,34 @@
 #ifndef _IMAGEN_H_
 #define _IMAGEN_H_
 
-#include "matriz.h"
-#include "vector.h"
+#include "AbstractMatrix.h"
+#include "Matrix.h"
 #include "rectangulo.h"
 #include <utility>
+#include "vector.h"
+
 
 using namespace std;
 
 class Imagen {
 public:
-	Imagen(const MatrizUChar &datos, int canales = 3);
-	Imagen(int alto, int ancho, const unsigned char *datos, int canales = 3);
+	Imagen(const MN::AbstractMatrix<unsigned char> &datos, int canales = 3);
+	Imagen(size_t alto, size_t ancho, const unsigned char *datos, size_t canales = 3);
+	Imagen(const Imagen &other);
+	Imagen( Imagen &&other)noexcept;
 	~Imagen();
 
-	inline MatrizUChar datos() const { return _datos; }
-	//Representa el ancho de la imagen EN PIXELS (es decir que si la imagen es a color con 3 canales devuelve al ancho de la matriz interna dividido 3).
-	inline int ancho() const { return (int)(_datos.ancho() / _canales); }
-	inline int alto() const { return _datos.alto(); }
+	inline const MN::Matrix<unsigned char>& datos() const { return _datos; }
+
+	Imagen& operator=(const Imagen &other);
+	Imagen& operator=(Imagen &&other) noexcept;
+
+	//Representa el ancho de la imagen EN PIXELS (es decir que si la imagen es a color con 3 canales devuelve al ancho de la Matrix interna dividido 3).
+	inline int ancho() const { return (int)(_datos.width() / _canales); }
+	inline int alto() const { return _datos.height(); }
 	inline int canales() const { return _canales; }
 	//Si tiene menos de 3 canales las ultimas posiciones del vector tienen 0.0.
-	inline Vector3D pixelEnXY(int x, int y) const { return _datos.rangoDeTresElementosEnYX(y, x*_canales); }
+	inline MN::Vector<unsigned char> pixelEnXY(int x, int y) const { return _datos.rangeOfThreeElementsAtYX(y, x*_canales); }
 
 	//Si se le pasa una mascara descarta lo negro que bordea la imagen.
 	Imagen subImagenReal() const;
@@ -38,10 +46,10 @@ public:
 	//offset define la region siendo cuantos pixel al rededor del pixel alctual se verifican.
 	//Ejemplo: pixel actual = (x, y) entonces la region es [x-offset, x+oofset], [y-offset, y+offset]
 	Rectangulo regionMasBrillanteDentroDeRegion(int offset, const Rectangulo &region) const;
-	void pintarPixel(int x, int y, int r, int g, int b);
+	void pintarPixel(int x, int y, unsigned char r, unsigned char g, unsigned char b);
 	void pintarBordeDeRegion(const Rectangulo &region, int r, int g, int b);
 private:
-	MatrizUChar _datos;
+	MN::Matrix<unsigned char> _datos;
 	int _canales;
 };
 

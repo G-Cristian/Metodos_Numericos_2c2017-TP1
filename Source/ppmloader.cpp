@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include "../Include/ppmloader.h"
 
-
 /*
  * src = Image pointer
  * pt  = Image type
@@ -123,6 +122,7 @@ bool LoadPPMFile(uchar** data, int *width, int *height, PPM_LOADER_PIXEL_TYPE* p
 	{
 		return false;
 	}
+
 	// Open file
 	FILE* fid = fopen(filename, "rb");
 	if (!fid) {

@@ -1,6 +1,7 @@
 #include "../Include/MatrizEsparsa.h"
-#include "../Include/matriz.h"
+#include "../Include/Matrix.h"
 #include <assert.h>
+#include "../Include/Matrix.h"
 
 using  namespace std;
 
@@ -11,7 +12,7 @@ MatrizEsparsa::MatrizEsparsa(int alto, int ancho) {
 	_columnasConElementosEnFilaI = vector<map<int, tipoElementos> >(_alto, map<int, tipoElementos>());
 }
 
-template<class T> MatrizEsparsa::MatrizEsparsa(const Matriz<T> &otra){
+template<class T> MatrizEsparsa::MatrizEsparsa(const Matrix<T> &otra){
 	_ancho = ancho;
 	_alto = alto;
 
